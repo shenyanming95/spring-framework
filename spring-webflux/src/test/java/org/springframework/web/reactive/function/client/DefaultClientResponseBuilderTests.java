@@ -41,77 +41,77 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 public class DefaultClientResponseBuilderTests {
 
-	private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+    private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
 
 
-	@Test
-	public void normal() {
-		Flux<DataBuffer> body = Flux.just("baz")
-				.map(s -> s.getBytes(StandardCharsets.UTF_8))
-				.map(dataBufferFactory::wrap);
+    @Test
+    public void normal() {
+        Flux<DataBuffer> body = Flux.just("baz")
+                .map(s -> s.getBytes(StandardCharsets.UTF_8))
+                .map(dataBufferFactory::wrap);
 
-		ClientResponse response = ClientResponse.create(HttpStatus.BAD_GATEWAY, ExchangeStrategies.withDefaults())
-				.header("foo", "bar")
-				.cookie("baz", "qux")
-				.body(body)
-				.build();
+        ClientResponse response = ClientResponse.create(HttpStatus.BAD_GATEWAY, ExchangeStrategies.withDefaults())
+                .header("foo", "bar")
+                .cookie("baz", "qux")
+                .body(body)
+                .build();
 
-		assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
-		HttpHeaders responseHeaders = response.headers().asHttpHeaders();
-		assertThat(responseHeaders.getFirst("foo")).isEqualTo("bar");
-		assertThat(response.cookies().getFirst("baz")).as("qux").isNotNull();
-		assertThat(response.cookies().getFirst("baz").getValue()).isEqualTo("qux");
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
+        HttpHeaders responseHeaders = response.headers().asHttpHeaders();
+        assertThat(responseHeaders.getFirst("foo")).isEqualTo("bar");
+        assertThat(response.cookies().getFirst("baz")).as("qux").isNotNull();
+        assertThat(response.cookies().getFirst("baz").getValue()).isEqualTo("qux");
 
-		StepVerifier.create(response.bodyToFlux(String.class))
-				.expectNext("baz")
-				.verifyComplete();
-	}
+        StepVerifier.create(response.bodyToFlux(String.class))
+                .expectNext("baz")
+                .verifyComplete();
+    }
 
-	@Test
-	public void from() {
-		Flux<DataBuffer> otherBody = Flux.just("foo", "bar")
-				.map(s -> s.getBytes(StandardCharsets.UTF_8))
-				.map(dataBufferFactory::wrap);
+    @Test
+    public void from() {
+        Flux<DataBuffer> otherBody = Flux.just("foo", "bar")
+                .map(s -> s.getBytes(StandardCharsets.UTF_8))
+                .map(dataBufferFactory::wrap);
 
-		HttpRequest mockClientHttpRequest = new MockClientHttpRequest(HttpMethod.GET, "/path");
+        HttpRequest mockClientHttpRequest = new MockClientHttpRequest(HttpMethod.GET, "/path");
 
-		MockClientHttpResponse httpResponse = new MockClientHttpResponse(HttpStatus.BAD_REQUEST);
-		httpResponse.getHeaders().add("foo", "bar");
-		httpResponse.getCookies().add("baz", ResponseCookie.from("baz", "qux").build());
-		httpResponse.setBody(otherBody);
+        MockClientHttpResponse httpResponse = new MockClientHttpResponse(HttpStatus.BAD_REQUEST);
+        httpResponse.getHeaders().add("foo", "bar");
+        httpResponse.getCookies().add("baz", ResponseCookie.from("baz", "qux").build());
+        httpResponse.setBody(otherBody);
 
 
-		DefaultClientResponse other = new DefaultClientResponse(
-				httpResponse, ExchangeStrategies.withDefaults(), "my-prefix", "", () -> mockClientHttpRequest);
+        DefaultClientResponse other = new DefaultClientResponse(
+                httpResponse, ExchangeStrategies.withDefaults(), "my-prefix", "", () -> mockClientHttpRequest);
 
-		Flux<DataBuffer> body = Flux.just("baz")
-				.map(s -> s.getBytes(StandardCharsets.UTF_8))
-				.map(dataBufferFactory::wrap);
+        Flux<DataBuffer> body = Flux.just("baz")
+                .map(s -> s.getBytes(StandardCharsets.UTF_8))
+                .map(dataBufferFactory::wrap);
 
-		ClientResponse result = ClientResponse.from(other)
-				.headers(httpHeaders -> httpHeaders.set("foo", "baar"))
-				.cookies(cookies -> cookies.set("baz", ResponseCookie.from("baz", "quux").build()))
-				.body(body)
-				.build();
+        ClientResponse result = ClientResponse.from(other)
+                .headers(httpHeaders -> httpHeaders.set("foo", "baar"))
+                .cookies(cookies -> cookies.set("baz", ResponseCookie.from("baz", "quux").build()))
+                .body(body)
+                .build();
 
-		assertThat(result.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-		assertThat(result.headers().asHttpHeaders().size()).isEqualTo(2);
-		assertThat(result.headers().asHttpHeaders().getFirst("foo")).isEqualTo("baar");
-		assertThat(result.cookies().size()).isEqualTo(1);
-		assertThat(result.cookies().getFirst("baz").getValue()).isEqualTo("quux");
-		assertThat(result.logPrefix()).isEqualTo("my-prefix");
+        assertThat(result.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(result.headers().asHttpHeaders().size()).isEqualTo(2);
+        assertThat(result.headers().asHttpHeaders().getFirst("foo")).isEqualTo("baar");
+        assertThat(result.cookies().size()).isEqualTo(1);
+        assertThat(result.cookies().getFirst("baz").getValue()).isEqualTo("quux");
+        assertThat(result.logPrefix()).isEqualTo("my-prefix");
 
-		StepVerifier.create(result.bodyToFlux(String.class))
-				.expectNext("baz")
-				.verifyComplete();
-	}
+        StepVerifier.create(result.bodyToFlux(String.class))
+                .expectNext("baz")
+                .verifyComplete();
+    }
 
-	@Test
-	public void fromCustomStatus() {
-		ClientResponse other = ClientResponse.create(499, ExchangeStrategies.withDefaults()).build();
-		ClientResponse result = ClientResponse.from(other).build();
+    @Test
+    public void fromCustomStatus() {
+        ClientResponse other = ClientResponse.create(499, ExchangeStrategies.withDefaults()).build();
+        ClientResponse result = ClientResponse.from(other).build();
 
-		assertThat(result.rawStatusCode()).isEqualTo(499);
-		assertThatIllegalArgumentException().isThrownBy(result::statusCode);
-	}
+        assertThat(result.rawStatusCode()).isEqualTo(499);
+        assertThatIllegalArgumentException().isThrownBy(result::statusCode);
+    }
 }

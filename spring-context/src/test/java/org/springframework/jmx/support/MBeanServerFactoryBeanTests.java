@@ -40,111 +40,104 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class MBeanServerFactoryBeanTests {
 
-	@BeforeEach
-	@AfterEach
-	void resetMBeanServers() throws Exception {
-		MBeanTestUtils.resetMBeanServers();
-	}
+    @BeforeEach
+    @AfterEach
+    void resetMBeanServers() throws Exception {
+        MBeanTestUtils.resetMBeanServers();
+    }
 
-	@Test
-	void defaultValues() throws Exception {
-		MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-		bean.afterPropertiesSet();
-		try {
-			MBeanServer server = bean.getObject();
-			assertThat(server).as("The MBeanServer should not be null").isNotNull();
-		}
-		finally {
-			bean.destroy();
-		}
-	}
+    @Test
+    void defaultValues() throws Exception {
+        MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+        bean.afterPropertiesSet();
+        try {
+            MBeanServer server = bean.getObject();
+            assertThat(server).as("The MBeanServer should not be null").isNotNull();
+        } finally {
+            bean.destroy();
+        }
+    }
 
-	@Test
-	void defaultDomain() throws Exception {
-		MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-		bean.setDefaultDomain("foo");
-		bean.afterPropertiesSet();
-		try {
-			MBeanServer server = bean.getObject();
-			assertThat(server.getDefaultDomain()).as("The default domain should be foo").isEqualTo("foo");
-		}
-		finally {
-			bean.destroy();
-		}
-	}
+    @Test
+    void defaultDomain() throws Exception {
+        MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+        bean.setDefaultDomain("foo");
+        bean.afterPropertiesSet();
+        try {
+            MBeanServer server = bean.getObject();
+            assertThat(server.getDefaultDomain()).as("The default domain should be foo").isEqualTo("foo");
+        } finally {
+            bean.destroy();
+        }
+    }
 
-	@Test
-	void locateExistingServerIfPossibleWithExistingServer() {
-		MBeanServer server = MBeanServerFactory.createMBeanServer();
-		try {
-			MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-			bean.setLocateExistingServerIfPossible(true);
-			bean.afterPropertiesSet();
-			try {
-				MBeanServer otherServer = bean.getObject();
-				assertThat(otherServer).as("Existing MBeanServer not located").isSameAs(server);
-			}
-			finally {
-				bean.destroy();
-			}
-		}
-		finally {
-			MBeanServerFactory.releaseMBeanServer(server);
-		}
-	}
+    @Test
+    void locateExistingServerIfPossibleWithExistingServer() {
+        MBeanServer server = MBeanServerFactory.createMBeanServer();
+        try {
+            MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+            bean.setLocateExistingServerIfPossible(true);
+            bean.afterPropertiesSet();
+            try {
+                MBeanServer otherServer = bean.getObject();
+                assertThat(otherServer).as("Existing MBeanServer not located").isSameAs(server);
+            } finally {
+                bean.destroy();
+            }
+        } finally {
+            MBeanServerFactory.releaseMBeanServer(server);
+        }
+    }
 
-	@Test
-	void locateExistingServerIfPossibleWithFallbackToPlatformServer() {
-		MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-		bean.setLocateExistingServerIfPossible(true);
-		bean.afterPropertiesSet();
-		try {
-			assertThat(bean.getObject()).isSameAs(ManagementFactory.getPlatformMBeanServer());
-		}
-		finally {
-			bean.destroy();
-		}
-	}
+    @Test
+    void locateExistingServerIfPossibleWithFallbackToPlatformServer() {
+        MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+        bean.setLocateExistingServerIfPossible(true);
+        bean.afterPropertiesSet();
+        try {
+            assertThat(bean.getObject()).isSameAs(ManagementFactory.getPlatformMBeanServer());
+        } finally {
+            bean.destroy();
+        }
+    }
 
-	@Test
-	void withEmptyAgentIdAndFallbackToPlatformServer() {
-		MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-		bean.setAgentId("");
-		bean.afterPropertiesSet();
-		try {
-			assertThat(bean.getObject()).isSameAs(ManagementFactory.getPlatformMBeanServer());
-		}
-		finally {
-			bean.destroy();
-		}
-	}
+    @Test
+    void withEmptyAgentIdAndFallbackToPlatformServer() {
+        MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+        bean.setAgentId("");
+        bean.afterPropertiesSet();
+        try {
+            assertThat(bean.getObject()).isSameAs(ManagementFactory.getPlatformMBeanServer());
+        } finally {
+            bean.destroy();
+        }
+    }
 
-	@Test
-	void createMBeanServer() throws Exception {
-		assertCreation(true, "The server should be available in the list");
-	}
+    @Test
+    void createMBeanServer() throws Exception {
+        assertCreation(true, "The server should be available in the list");
+    }
 
-	@Test
-	void newMBeanServer() throws Exception {
-		assertCreation(false, "The server should not be available in the list");
-	}
+    @Test
+    void newMBeanServer() throws Exception {
+        assertCreation(false, "The server should not be available in the list");
+    }
 
-	private void assertCreation(boolean referenceShouldExist, String failMsg) throws Exception {
-		MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
-		bean.setRegisterWithFactory(referenceShouldExist);
-		bean.afterPropertiesSet();
-		try {
-			MBeanServer server = bean.getObject();
-			List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
-			assertThat(hasInstance(servers, server)).as(failMsg).isEqualTo(referenceShouldExist);
-		}
-		finally {
-			bean.destroy();
-		}
-	}
+    private void assertCreation(boolean referenceShouldExist, String failMsg) throws Exception {
+        MBeanServerFactoryBean bean = new MBeanServerFactoryBean();
+        bean.setRegisterWithFactory(referenceShouldExist);
+        bean.afterPropertiesSet();
+        try {
+            MBeanServer server = bean.getObject();
+            List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
+            assertThat(hasInstance(servers, server)).as(failMsg).isEqualTo(referenceShouldExist);
+        } finally {
+            bean.destroy();
+        }
+    }
 
-	private boolean hasInstance(List<MBeanServer> servers, MBeanServer server) {
-		return servers.stream().anyMatch(current -> current == server);
-	}
+    private boolean hasInstance(List<MBeanServer> servers, MBeanServer server) {
+        return servers.stream().anyMatch(current -> current == server);
+    }
 
 }

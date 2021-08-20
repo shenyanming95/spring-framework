@@ -32,17 +32,17 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
  */
 public class PrincipalMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	@Override
-	public boolean supportsParameter(MethodParameter parameter) {
-		MethodParameter nestedParameter = parameter.nestedIfOptional();
-		Class<?> paramType = nestedParameter.getNestedParameterType();
-		return Principal.class.isAssignableFrom(paramType);
-	}
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        MethodParameter nestedParameter = parameter.nestedIfOptional();
+        Class<?> paramType = nestedParameter.getNestedParameterType();
+        return Principal.class.isAssignableFrom(paramType);
+    }
 
-	@Override
-	public Object resolveArgument(MethodParameter parameter, Message<?> message){
-		Principal user = SimpMessageHeaderAccessor.getUser(message.getHeaders());
-		return parameter.isOptional() ? Optional.ofNullable(user) : user;
-	}
+    @Override
+    public Object resolveArgument(MethodParameter parameter, Message<?> message) {
+        Principal user = SimpMessageHeaderAccessor.getUser(message.getHeaders());
+        return parameter.isOptional() ? Optional.ofNullable(user) : user;
+    }
 
 }

@@ -17,7 +17,6 @@
 package org.springframework.test.context.junit4.spr3896;
 
 import org.junit.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.testfixture.beans.Pet;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,13 +36,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration("DefaultLocationsInheritedTests-context.xml")
 public class ExplicitLocationsInheritedTests extends ExplicitLocationsBaseTests {
 
-	@Autowired
-	private Pet pet;
+    @Autowired
+    private Pet pet;
 
 
-	@Test
-	public void verifyPetSetFromExtendedContextConfig() {
-		assertThat(this.pet).as("The pet should have been autowired.").isNotNull();
-		assertThat(this.pet.getName()).isEqualTo("Fido");
-	}
+    @Test
+    public void verifyPetSetFromExtendedContextConfig() {
+        assertThat(this.pet).as("The pet should have been autowired.").isNotNull();
+        assertThat(this.pet.getName()).isEqualTo("Fido");
+    }
 }

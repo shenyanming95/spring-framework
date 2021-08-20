@@ -18,7 +18,6 @@ package org.springframework.test.context.junit4.annotation.meta;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -36,12 +35,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @MetaMetaConfig
 public class MetaMetaConfigDefaultsTests {
 
-	@Autowired
-	private String foo;
+    @Autowired
+    private String foo;
 
 
-	@Test
-	public void foo() {
-		assertThat(foo).isEqualTo("Production Foo");
-	}
+    @Test
+    public void foo() {
+        assertThat(foo).isEqualTo("Production Foo");
+    }
 }

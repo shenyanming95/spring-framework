@@ -18,7 +18,6 @@ package org.springframework.test.context.junit4.spr3896;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.testfixture.beans.Employee;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,13 +39,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration
 public class DefaultLocationsBaseTests {
 
-	@Autowired
-	protected Employee employee;
+    @Autowired
+    protected Employee employee;
 
 
-	@Test
-	public void verifyEmployeeSetFromBaseContextConfig() {
-		assertThat(this.employee).as("The employee should have been autowired.").isNotNull();
-		assertThat(this.employee.getName()).isEqualTo("John Smith");
-	}
+    @Test
+    public void verifyEmployeeSetFromBaseContextConfig() {
+        assertThat(this.employee).as("The employee should have been autowired.").isNotNull();
+        assertThat(this.employee.getName()).isEqualTo("John Smith");
+    }
 }

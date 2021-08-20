@@ -16,16 +16,15 @@
 
 package org.springframework.test.context.junit4.spr8849;
 
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,26 +34,24 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Mickael Leduque
  * @author Sam Brannen
- * @since 3.2
  * @see Spr8849Tests
+ * @since 3.2
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class TestClass2 {
 
-	@Configuration
-	@ImportResource("classpath:/org/springframework/test/context/junit4/spr8849/datasource-config.xml")
-	static class Config {
-	}
+    @Resource
+    DataSource dataSource;
 
+    @Test
+    public void dummyTest() {
+        assertThat(dataSource).isNotNull();
+    }
 
-	@Resource
-	DataSource dataSource;
-
-
-	@Test
-	public void dummyTest() {
-		assertThat(dataSource).isNotNull();
-	}
+    @Configuration
+    @ImportResource("classpath:/org/springframework/test/context/junit4/spr8849/datasource-config.xml")
+    static class Config {
+    }
 
 }

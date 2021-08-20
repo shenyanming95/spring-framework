@@ -42,158 +42,163 @@ import static org.mockito.Mockito.mock;
  */
 public class DelegatingWebFluxConfigurationIntegrationTests {
 
-	private AnnotationConfigApplicationContext context;
+    private AnnotationConfigApplicationContext context;
 
-	@AfterEach
-	public void closeContext() {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
+    @AfterEach
+    public void closeContext() {
+        if (this.context != null) {
+            this.context.close();
+        }
+    }
 
-	@Test
-	void requestMappingHandlerMappingUsesWebFluxInfrastructureByDefault() {
-		load(context -> { });
-		RequestMappingHandlerMapping handlerMapping = this.context.getBean(RequestMappingHandlerMapping.class);
-		assertThat(handlerMapping.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-	}
+    @Test
+    void requestMappingHandlerMappingUsesWebFluxInfrastructureByDefault() {
+        load(context -> {
+        });
+        RequestMappingHandlerMapping handlerMapping = this.context.getBean(RequestMappingHandlerMapping.class);
+        assertThat(handlerMapping.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+    }
 
-	@Test
-	void requestMappingHandlerMappingWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
-		load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
-		RequestMappingHandlerMapping handlerMapping = this.context.getBean(RequestMappingHandlerMapping.class);
-		assertThat(handlerMapping.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-		assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
-				"webFluxContentTypeResolver", "testContentTypeResolver");
-	}
+    @Test
+    void requestMappingHandlerMappingWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
+        load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
+        RequestMappingHandlerMapping handlerMapping = this.context.getBean(RequestMappingHandlerMapping.class);
+        assertThat(handlerMapping.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+        assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
+                "webFluxContentTypeResolver", "testContentTypeResolver");
+    }
 
-	@Test
-	void requestMappingHandlerAdapterUsesWebFluxInfrastructureByDefault() {
-		load(context -> { });
-		RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
-		assertThat(mappingHandlerAdapter.getReactiveAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("conversionService",
-				this.context.getBean("webFluxConversionService"));
-		assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("validator",
-				this.context.getBean("webFluxValidator"));
-	}
+    @Test
+    void requestMappingHandlerAdapterUsesWebFluxInfrastructureByDefault() {
+        load(context -> {
+        });
+        RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
+        assertThat(mappingHandlerAdapter.getReactiveAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("conversionService",
+                this.context.getBean("webFluxConversionService"));
+        assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("validator",
+                this.context.getBean("webFluxValidator"));
+    }
 
-	@Test
-	void requestMappingHandlerAdapterWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
-		load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
-		RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
-		assertThat(mappingHandlerAdapter.getReactiveAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
-				"webFluxAdapterRegistry", "testReactiveAdapterRegistry");
-	}
+    @Test
+    void requestMappingHandlerAdapterWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
+        load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
+        RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
+        assertThat(mappingHandlerAdapter.getReactiveAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
+                "webFluxAdapterRegistry", "testReactiveAdapterRegistry");
+    }
 
-	@Test
-	void requestMappingHandlerAdapterWithPrimaryUsesQualifiedConversionService() {
-		load(registerPrimaryBean("testConversionService", FormattingConversionService.class));
-		RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
-		assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("conversionService",
-				this.context.getBean("webFluxConversionService"));
-		assertThat(this.context.getBeansOfType(FormattingConversionService.class)).containsOnlyKeys(
-				"webFluxConversionService", "testConversionService");
-	}
+    @Test
+    void requestMappingHandlerAdapterWithPrimaryUsesQualifiedConversionService() {
+        load(registerPrimaryBean("testConversionService", FormattingConversionService.class));
+        RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
+        assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("conversionService",
+                this.context.getBean("webFluxConversionService"));
+        assertThat(this.context.getBeansOfType(FormattingConversionService.class)).containsOnlyKeys(
+                "webFluxConversionService", "testConversionService");
+    }
 
-	@Test
-	void requestMappingHandlerAdapterWithPrimaryUsesQualifiedValidator() {
-		load(registerPrimaryBean("testValidator", Validator.class));
-		RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
-		assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("validator",
-				this.context.getBean("webFluxValidator"));
-		assertThat(this.context.getBeansOfType(Validator.class)).containsOnlyKeys(
-				"webFluxValidator", "testValidator");
-	}
+    @Test
+    void requestMappingHandlerAdapterWithPrimaryUsesQualifiedValidator() {
+        load(registerPrimaryBean("testValidator", Validator.class));
+        RequestMappingHandlerAdapter mappingHandlerAdapter = this.context.getBean(RequestMappingHandlerAdapter.class);
+        assertThat(mappingHandlerAdapter.getWebBindingInitializer()).hasFieldOrPropertyWithValue("validator",
+                this.context.getBean("webFluxValidator"));
+        assertThat(this.context.getBeansOfType(Validator.class)).containsOnlyKeys(
+                "webFluxValidator", "testValidator");
+    }
 
-	@Test
-	void responseEntityResultHandlerUsesWebFluxInfrastructureByDefault() {
-		load(context -> { });
-		ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
-		assertThat(responseEntityResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(responseEntityResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-	}
+    @Test
+    void responseEntityResultHandlerUsesWebFluxInfrastructureByDefault() {
+        load(context -> {
+        });
+        ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
+        assertThat(responseEntityResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(responseEntityResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+    }
 
-	@Test
-	void responseEntityResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
-		load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
-		ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
-		assertThat(responseEntityResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
-				"webFluxAdapterRegistry", "testReactiveAdapterRegistry");
-	}
+    @Test
+    void responseEntityResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
+        load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
+        ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
+        assertThat(responseEntityResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
+                "webFluxAdapterRegistry", "testReactiveAdapterRegistry");
+    }
 
-	@Test
-	void responseEntityResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
-		load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
-		ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
-		assertThat(responseEntityResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-		assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
-				"webFluxContentTypeResolver", "testContentTypeResolver");
-	}
+    @Test
+    void responseEntityResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
+        load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
+        ResponseEntityResultHandler responseEntityResultHandler = this.context.getBean(ResponseEntityResultHandler.class);
+        assertThat(responseEntityResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+        assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
+                "webFluxContentTypeResolver", "testContentTypeResolver");
+    }
 
-	@Test
-	void responseBodyResultHandlerUsesWebFluxInfrastructureByDefault() {
-		load(context -> { });
-		ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
-		assertThat(responseBodyResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(responseBodyResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-	}
+    @Test
+    void responseBodyResultHandlerUsesWebFluxInfrastructureByDefault() {
+        load(context -> {
+        });
+        ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
+        assertThat(responseBodyResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(responseBodyResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+    }
 
-	@Test
-	void responseBodyResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
-		load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
-		ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
-		assertThat(responseBodyResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
-				"webFluxAdapterRegistry", "testReactiveAdapterRegistry");
-	}
+    @Test
+    void responseBodyResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
+        load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
+        ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
+        assertThat(responseBodyResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
+                "webFluxAdapterRegistry", "testReactiveAdapterRegistry");
+    }
 
-	@Test
-	void responseBodyResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
-		load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
-		ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
-		assertThat(responseBodyResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-		assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
-				"webFluxContentTypeResolver", "testContentTypeResolver");
-	}
+    @Test
+    void responseBodyResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
+        load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
+        ResponseBodyResultHandler responseBodyResultHandler = this.context.getBean(ResponseBodyResultHandler.class);
+        assertThat(responseBodyResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+        assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
+                "webFluxContentTypeResolver", "testContentTypeResolver");
+    }
 
-	@Test
-	void viewResolutionResultHandlerUsesWebFluxInfrastructureByDefault() {
-		load(context -> { });
-		ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
-		assertThat(viewResolutionResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(viewResolutionResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-	}
+    @Test
+    void viewResolutionResultHandlerUsesWebFluxInfrastructureByDefault() {
+        load(context -> {
+        });
+        ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
+        assertThat(viewResolutionResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(viewResolutionResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+    }
 
-	@Test
-	void viewResolutionResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
-		load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
-		ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
-		assertThat(viewResolutionResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
-		assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
-				"webFluxAdapterRegistry", "testReactiveAdapterRegistry");
-	}
+    @Test
+    void viewResolutionResultHandlerWithPrimaryUsesQualifiedReactiveAdapterRegistry() {
+        load(registerPrimaryBean("testReactiveAdapterRegistry", ReactiveAdapterRegistry.class));
+        ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
+        assertThat(viewResolutionResultHandler.getAdapterRegistry()).isSameAs(this.context.getBean("webFluxAdapterRegistry"));
+        assertThat(this.context.getBeansOfType(ReactiveAdapterRegistry.class)).containsOnlyKeys(
+                "webFluxAdapterRegistry", "testReactiveAdapterRegistry");
+    }
 
-	@Test
-	void viewResolutionResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
-		load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
-		ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
-		assertThat(viewResolutionResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
-		assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
-				"webFluxContentTypeResolver", "testContentTypeResolver");
-	}
+    @Test
+    void viewResolutionResultHandlerWithPrimaryUsesQualifiedRequestedContentTypeResolver() {
+        load(registerPrimaryBean("testContentTypeResolver", RequestedContentTypeResolver.class));
+        ViewResolutionResultHandler viewResolutionResultHandler = this.context.getBean(ViewResolutionResultHandler.class);
+        assertThat(viewResolutionResultHandler.getContentTypeResolver()).isSameAs(this.context.getBean("webFluxContentTypeResolver"));
+        assertThat(this.context.getBeansOfType(RequestedContentTypeResolver.class)).containsOnlyKeys(
+                "webFluxContentTypeResolver", "testContentTypeResolver");
+    }
 
-	private <T> Consumer<AnnotationConfigApplicationContext> registerPrimaryBean(String beanName, Class<T> type) {
-		return context -> context.registerBean(beanName, type, () -> mock(type), definition -> definition.setPrimary(true));
-	}
+    private <T> Consumer<AnnotationConfigApplicationContext> registerPrimaryBean(String beanName, Class<T> type) {
+        return context -> context.registerBean(beanName, type, () -> mock(type), definition -> definition.setPrimary(true));
+    }
 
-	private void load(Consumer<AnnotationConfigApplicationContext> context) {
-		AnnotationConfigApplicationContext testContext = new AnnotationConfigApplicationContext();
-		context.accept(testContext);
-		testContext.registerBean(DelegatingWebFluxConfiguration.class);
-		testContext.refresh();
-		this.context = testContext;
-	}
+    private void load(Consumer<AnnotationConfigApplicationContext> context) {
+        AnnotationConfigApplicationContext testContext = new AnnotationConfigApplicationContext();
+        context.accept(testContext);
+        testContext.registerBean(DelegatingWebFluxConfiguration.class);
+        testContext.refresh();
+        this.context = testContext;
+    }
 }

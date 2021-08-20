@@ -26,10 +26,10 @@ import org.springframework.context.testfixture.cache.AbstractCacheAnnotationTest
  */
 public class AnnotationDrivenCacheConfigTests extends AbstractCacheAnnotationTests {
 
-	@Override
-	protected ConfigurableApplicationContext getApplicationContext() {
-		return new GenericXmlApplicationContext(
-				"/org/springframework/cache/config/annotationDrivenCacheConfig.xml");
-	}
+    @Override
+    protected ConfigurableApplicationContext getApplicationContext() {
+        return new GenericXmlApplicationContext(
+                "/org/springframework/cache/config/annotationDrivenCacheConfig.xml");
+    }
 
 }

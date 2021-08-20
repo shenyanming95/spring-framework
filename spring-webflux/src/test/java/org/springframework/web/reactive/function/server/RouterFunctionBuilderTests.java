@@ -38,176 +38,176 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
  */
 public class RouterFunctionBuilderTests {
 
-	@Test
-	public void route() {
-		RouterFunction<ServerResponse> route = RouterFunctions.route()
-				.GET("/foo", request -> ServerResponse.ok().build())
-				.POST("/", RequestPredicates.contentType(MediaType.TEXT_PLAIN), request -> ServerResponse.noContent().build())
-				.route(HEAD("/foo"), request -> ServerResponse.accepted().build())
-				.build();
+    @Test
+    public void route() {
+        RouterFunction<ServerResponse> route = RouterFunctions.route()
+                .GET("/foo", request -> ServerResponse.ok().build())
+                .POST("/", RequestPredicates.contentType(MediaType.TEXT_PLAIN), request -> ServerResponse.noContent().build())
+                .route(HEAD("/foo"), request -> ServerResponse.accepted().build())
+                .build();
 
-		MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://example.com/foo").build();
-		ServerRequest getRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://example.com/foo").build();
+        ServerRequest getRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		Mono<Integer> responseMono = route.route(getRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(getRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        Mono<Integer> responseMono = route.route(getRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(getRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.expectNext(200)
-				.verifyComplete();
+        StepVerifier.create(responseMono)
+                .expectNext(200)
+                .verifyComplete();
 
-		mockRequest = MockServerHttpRequest.head("https://example.com/foo").build();
-		ServerRequest headRequest =
-				new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        mockRequest = MockServerHttpRequest.head("https://example.com/foo").build();
+        ServerRequest headRequest =
+                new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		responseMono = route.route(headRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(headRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        responseMono = route.route(headRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(headRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.expectNext(202)
-				.verifyComplete();
+        StepVerifier.create(responseMono)
+                .expectNext(202)
+                .verifyComplete();
 
-		mockRequest = MockServerHttpRequest.post("https://example.com/").
-				contentType(MediaType.TEXT_PLAIN).build();
-		ServerRequest barRequest =
-				new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        mockRequest = MockServerHttpRequest.post("https://example.com/").
+                contentType(MediaType.TEXT_PLAIN).build();
+        ServerRequest barRequest =
+                new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		responseMono = route.route(barRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(barRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        responseMono = route.route(barRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(barRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.expectNext(204)
-				.verifyComplete();
+        StepVerifier.create(responseMono)
+                .expectNext(204)
+                .verifyComplete();
 
-		mockRequest = MockServerHttpRequest.post("https://example.com/").build();
-		ServerRequest invalidRequest =
-				new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        mockRequest = MockServerHttpRequest.post("https://example.com/").build();
+        ServerRequest invalidRequest =
+                new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		responseMono = route.route(invalidRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(invalidRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        responseMono = route.route(invalidRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(invalidRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.verifyComplete();
+        StepVerifier.create(responseMono)
+                .verifyComplete();
 
-	}
+    }
 
-	@Test
-	public void resources() {
-		Resource resource = new ClassPathResource("/org/springframework/web/reactive/function/server/");
-		assertThat(resource.exists()).isTrue();
+    @Test
+    public void resources() {
+        Resource resource = new ClassPathResource("/org/springframework/web/reactive/function/server/");
+        assertThat(resource.exists()).isTrue();
 
-		RouterFunction<ServerResponse> route = RouterFunctions.route()
-				.resources("/resources/**", resource)
-				.build();
+        RouterFunction<ServerResponse> route = RouterFunctions.route()
+                .resources("/resources/**", resource)
+                .build();
 
-		MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/resources/response.txt").build();
-		ServerRequest resourceRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/resources/response.txt").build();
+        ServerRequest resourceRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		Mono<Integer> responseMono = route.route(resourceRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(resourceRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        Mono<Integer> responseMono = route.route(resourceRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(resourceRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.expectNext(200)
-				.verifyComplete();
+        StepVerifier.create(responseMono)
+                .expectNext(200)
+                .verifyComplete();
 
-		mockRequest = MockServerHttpRequest.post("https://localhost/resources/foo.txt").build();
-		ServerRequest invalidRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        mockRequest = MockServerHttpRequest.post("https://localhost/resources/foo.txt").build();
+        ServerRequest invalidRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		responseMono = route.route(invalidRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(invalidRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        responseMono = route.route(invalidRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(invalidRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.verifyComplete();
-	}
+        StepVerifier.create(responseMono)
+                .verifyComplete();
+    }
 
-	@Test
-	public void nest() {
-		RouterFunction<?> route = RouterFunctions.route()
-				.path("/foo", builder ->
-						builder.path("/bar",
-								() -> RouterFunctions.route()
-										.GET("/baz", request -> ServerResponse.ok().build())
-										.build()))
-				.build();
+    @Test
+    public void nest() {
+        RouterFunction<?> route = RouterFunctions.route()
+                .path("/foo", builder ->
+                        builder.path("/bar",
+                                () -> RouterFunctions.route()
+                                        .GET("/baz", request -> ServerResponse.ok().build())
+                                        .build()))
+                .build();
 
-		MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/foo/bar/baz").build();
-		ServerRequest fooRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/foo/bar/baz").build();
+        ServerRequest fooRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		Mono<Integer> responseMono = route.route(fooRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(fooRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        Mono<Integer> responseMono = route.route(fooRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(fooRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(responseMono)
-				.expectNext(200)
-				.verifyComplete();
-	}
+        StepVerifier.create(responseMono)
+                .expectNext(200)
+                .verifyComplete();
+    }
 
-	@Test
-	public void filters() {
-		AtomicInteger filterCount = new AtomicInteger();
+    @Test
+    public void filters() {
+        AtomicInteger filterCount = new AtomicInteger();
 
-		RouterFunction<?> route = RouterFunctions.route()
-				.GET("/foo", request -> ServerResponse.ok().build())
-				.GET("/bar", request -> Mono.error(new IllegalStateException()))
-				.before(request -> {
-					int count = filterCount.getAndIncrement();
-					assertThat(count).isEqualTo(0);
-					return request;
-				})
-				.after((request, response) -> {
-					int count = filterCount.getAndIncrement();
-					assertThat(count).isEqualTo(3);
-					return response;
-				})
-				.filter((request, next) -> {
-					int count = filterCount.getAndIncrement();
-					assertThat(count).isEqualTo(1);
-					Mono<ServerResponse> responseMono = next.handle(request);
-					count = filterCount.getAndIncrement();
-					assertThat(count).isEqualTo(2);
-					return responseMono;
-				})
-				.onError(IllegalStateException.class, (e, request) -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
-				.build();
+        RouterFunction<?> route = RouterFunctions.route()
+                .GET("/foo", request -> ServerResponse.ok().build())
+                .GET("/bar", request -> Mono.error(new IllegalStateException()))
+                .before(request -> {
+                    int count = filterCount.getAndIncrement();
+                    assertThat(count).isEqualTo(0);
+                    return request;
+                })
+                .after((request, response) -> {
+                    int count = filterCount.getAndIncrement();
+                    assertThat(count).isEqualTo(3);
+                    return response;
+                })
+                .filter((request, next) -> {
+                    int count = filterCount.getAndIncrement();
+                    assertThat(count).isEqualTo(1);
+                    Mono<ServerResponse> responseMono = next.handle(request);
+                    count = filterCount.getAndIncrement();
+                    assertThat(count).isEqualTo(2);
+                    return responseMono;
+                })
+                .onError(IllegalStateException.class, (e, request) -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
+                .build();
 
-		MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/foo").build();
-		ServerRequest fooRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        MockServerHttpRequest mockRequest = MockServerHttpRequest.get("https://localhost/foo").build();
+        ServerRequest fooRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		Mono<ServerResponse> fooResponseMono = route.route(fooRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(fooRequest));
+        Mono<ServerResponse> fooResponseMono = route.route(fooRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(fooRequest));
 
 
-		StepVerifier.create(fooResponseMono)
-				.consumeNextWith(serverResponse -> assertThat(filterCount.get()).isEqualTo(4)
-				)
-				.verifyComplete();
+        StepVerifier.create(fooResponseMono)
+                .consumeNextWith(serverResponse -> assertThat(filterCount.get()).isEqualTo(4)
+                )
+                .verifyComplete();
 
-		filterCount.set(0);
+        filterCount.set(0);
 
-		mockRequest = MockServerHttpRequest.get("https://localhost/bar").build();
-		ServerRequest barRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
+        mockRequest = MockServerHttpRequest.get("https://localhost/bar").build();
+        ServerRequest barRequest = new DefaultServerRequest(MockServerWebExchange.from(mockRequest), Collections.emptyList());
 
-		Mono<Integer> barResponseMono = route.route(barRequest)
-				.flatMap(handlerFunction -> handlerFunction.handle(barRequest))
-				.map(ServerResponse::statusCode)
-				.map(HttpStatus::value);
+        Mono<Integer> barResponseMono = route.route(barRequest)
+                .flatMap(handlerFunction -> handlerFunction.handle(barRequest))
+                .map(ServerResponse::statusCode)
+                .map(HttpStatus::value);
 
-		StepVerifier.create(barResponseMono)
-				.expectNext(500)
-				.verifyComplete();
-	}
+        StepVerifier.create(barResponseMono)
+                .expectNext(500)
+                .verifyComplete();
+    }
 
 }

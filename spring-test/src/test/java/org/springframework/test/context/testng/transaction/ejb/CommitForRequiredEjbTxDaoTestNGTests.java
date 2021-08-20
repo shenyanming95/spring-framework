@@ -16,12 +16,11 @@
 
 package org.springframework.test.context.testng.transaction.ejb;
 
-import org.testng.annotations.Test;
-
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.context.transaction.ejb.dao.RequiredEjbTxTestEntityDao;
+import org.testng.annotations.Test;
 
 /**
  * Concrete subclass of {@link AbstractEjbTxDaoTestNGTests} which uses the
@@ -37,6 +36,6 @@ import org.springframework.test.context.transaction.ejb.dao.RequiredEjbTxTestEnt
 @Commit
 public class CommitForRequiredEjbTxDaoTestNGTests extends AbstractEjbTxDaoTestNGTests {
 
-	/* test methods in superclass */
+    /* test methods in superclass */
 
 }

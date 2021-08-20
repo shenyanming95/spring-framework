@@ -43,151 +43,154 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public class ReactorNettyRequestUpgradeStrategy implements RequestUpgradeStrategy {
 
-	private final Supplier<WebsocketServerSpec.Builder> specBuilderSupplier;
+    private final Supplier<WebsocketServerSpec.Builder> specBuilderSupplier;
 
-	@Nullable
-	private Integer maxFramePayloadLength;
+    @Nullable
+    private Integer maxFramePayloadLength;
 
-	@Nullable
-	private Boolean handlePing;
-
-
-	/**
-	 * Create an instances with a default {@link WebsocketServerSpec.Builder}.
-	 * @since 5.2.6
-	 */
-	public ReactorNettyRequestUpgradeStrategy() {
-		this(WebsocketServerSpec::builder);
-	}
+    @Nullable
+    private Boolean handlePing;
 
 
-	/**
-	 * Create an instance with a pre-configured {@link WebsocketServerSpec.Builder}
-	 * to use for WebSocket upgrades.
-	 * @since 5.2.6
-	 */
-	public ReactorNettyRequestUpgradeStrategy(Supplier<WebsocketServerSpec.Builder> builderSupplier) {
-		Assert.notNull(builderSupplier, "WebsocketServerSpec.Builder is required");
-		this.specBuilderSupplier = builderSupplier;
-	}
+    /**
+     * Create an instances with a default {@link WebsocketServerSpec.Builder}.
+     *
+     * @since 5.2.6
+     */
+    public ReactorNettyRequestUpgradeStrategy() {
+        this(WebsocketServerSpec::builder);
+    }
 
 
-	/**
-	 * Build an instance of {@code WebsocketServerSpec} that reflects the current
-	 * configuration. This can be used to check the configured parameters except
-	 * for sub-protocols which depend on the {@link WebSocketHandler} that is used
-	 * for a given upgrade.
-	 * @since 5.2.6
-	 */
-	public WebsocketServerSpec getWebsocketServerSpec() {
-		return buildSpec(null);
-	}
+    /**
+     * Create an instance with a pre-configured {@link WebsocketServerSpec.Builder}
+     * to use for WebSocket upgrades.
+     *
+     * @since 5.2.6
+     */
+    public ReactorNettyRequestUpgradeStrategy(Supplier<WebsocketServerSpec.Builder> builderSupplier) {
+        Assert.notNull(builderSupplier, "WebsocketServerSpec.Builder is required");
+        this.specBuilderSupplier = builderSupplier;
+    }
 
-	WebsocketServerSpec buildSpec(@Nullable String subProtocol) {
-		WebsocketServerSpec.Builder builder = this.specBuilderSupplier.get();
-		if (subProtocol != null) {
-			builder.protocols(subProtocol);
-		}
-		if (this.maxFramePayloadLength != null) {
-			builder.maxFramePayloadLength(this.maxFramePayloadLength);
-		}
-		if (this.handlePing != null) {
-			builder.handlePing(this.handlePing);
-		}
-		return builder.build();
-	}
+    private static HttpServerResponse getNativeResponse(ServerHttpResponse response) {
+        if (response instanceof AbstractServerHttpResponse) {
+            return ((AbstractServerHttpResponse) response).getNativeResponse();
+        } else if (response instanceof ServerHttpResponseDecorator) {
+            return getNativeResponse(((ServerHttpResponseDecorator) response).getDelegate());
+        } else {
+            throw new IllegalArgumentException(
+                    "Couldn't find native response in " + response.getClass().getName());
+        }
+    }
 
-	/**
-	 * Configure the maximum allowable frame payload length. Setting this value
-	 * to your application's requirement may reduce denial of service attacks
-	 * using long data frames.
-	 * <p>Corresponds to the argument with the same name in the constructor of
-	 * {@link io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory
-	 * WebSocketServerHandshakerFactory} in Netty.
-	 * <p>By default set to 65536 (64K).
-	 * @param maxFramePayloadLength the max length for frames.
-	 * @since 5.1
-	 * @deprecated as of 5.2.6 in favor of providing a supplier of
-	 * {@link WebsocketServerSpec.Builder} wiht a constructor argument.
-	 */
-	@Deprecated
-	public void setMaxFramePayloadLength(Integer maxFramePayloadLength) {
-		this.maxFramePayloadLength = maxFramePayloadLength;
-	}
+    /**
+     * Build an instance of {@code WebsocketServerSpec} that reflects the current
+     * configuration. This can be used to check the configured parameters except
+     * for sub-protocols which depend on the {@link WebSocketHandler} that is used
+     * for a given upgrade.
+     *
+     * @since 5.2.6
+     */
+    public WebsocketServerSpec getWebsocketServerSpec() {
+        return buildSpec(null);
+    }
 
-	/**
-	 * Return the configured max length for frames.
-	 * @since 5.1
-	 * @deprecated as of 5.2.6 in favor of {@link #getWebsocketServerSpec()}
-	 */
-	@Deprecated
-	public int getMaxFramePayloadLength() {
-		return getWebsocketServerSpec().maxFramePayloadLength();
-	}
+    WebsocketServerSpec buildSpec(@Nullable String subProtocol) {
+        WebsocketServerSpec.Builder builder = this.specBuilderSupplier.get();
+        if (subProtocol != null) {
+            builder.protocols(subProtocol);
+        }
+        if (this.maxFramePayloadLength != null) {
+            builder.maxFramePayloadLength(this.maxFramePayloadLength);
+        }
+        if (this.handlePing != null) {
+            builder.handlePing(this.handlePing);
+        }
+        return builder.build();
+    }
 
-	/**
-	 * Configure whether to let ping frames through to be handled by the
-	 * {@link WebSocketHandler} given to the upgrade method. By default, Reactor
-	 * Netty automatically replies with pong frames in response to pings. This is
-	 * useful in a proxy for allowing ping and pong frames through.
-	 * <p>By default this is set to {@code false} in which case ping frames are
-	 * handled automatically by Reactor Netty. If set to {@code true}, ping
-	 * frames will be passed through to the {@link WebSocketHandler}.
-	 * @param handlePing whether to let Ping frames through for handling
-	 * @since 5.2.4
-	 * @deprecated as of 5.2.6 in favor of providing a supplier of
-	 * {@link WebsocketServerSpec.Builder} wiht a constructor argument.
-	 */
-	@Deprecated
-	public void setHandlePing(boolean handlePing) {
-		this.handlePing = handlePing;
-	}
+    /**
+     * Return the configured max length for frames.
+     *
+     * @since 5.1
+     * @deprecated as of 5.2.6 in favor of {@link #getWebsocketServerSpec()}
+     */
+    @Deprecated
+    public int getMaxFramePayloadLength() {
+        return getWebsocketServerSpec().maxFramePayloadLength();
+    }
 
-	/**
-	 * Return the configured {@link #setHandlePing(boolean)}.
-	 * @since 5.2.4
-	 * @deprecated as of 5.2.6 in favor of {@link #getWebsocketServerSpec()}
-	 */
-	@Deprecated
-	public boolean getHandlePing() {
-		return getWebsocketServerSpec().handlePing();
-	}
+    /**
+     * Configure the maximum allowable frame payload length. Setting this value
+     * to your application's requirement may reduce denial of service attacks
+     * using long data frames.
+     * <p>Corresponds to the argument with the same name in the constructor of
+     * {@link io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory
+     * WebSocketServerHandshakerFactory} in Netty.
+     * <p>By default set to 65536 (64K).
+     *
+     * @param maxFramePayloadLength the max length for frames.
+     * @since 5.1
+     * @deprecated as of 5.2.6 in favor of providing a supplier of
+     * {@link WebsocketServerSpec.Builder} wiht a constructor argument.
+     */
+    @Deprecated
+    public void setMaxFramePayloadLength(Integer maxFramePayloadLength) {
+        this.maxFramePayloadLength = maxFramePayloadLength;
+    }
 
+    /**
+     * Return the configured {@link #setHandlePing(boolean)}.
+     *
+     * @since 5.2.4
+     * @deprecated as of 5.2.6 in favor of {@link #getWebsocketServerSpec()}
+     */
+    @Deprecated
+    public boolean getHandlePing() {
+        return getWebsocketServerSpec().handlePing();
+    }
 
-	@Override
-	public Mono<Void> upgrade(ServerWebExchange exchange, WebSocketHandler handler,
-			@Nullable String subProtocol, Supplier<HandshakeInfo> handshakeInfoFactory) {
+    /**
+     * Configure whether to let ping frames through to be handled by the
+     * {@link WebSocketHandler} given to the upgrade method. By default, Reactor
+     * Netty automatically replies with pong frames in response to pings. This is
+     * useful in a proxy for allowing ping and pong frames through.
+     * <p>By default this is set to {@code false} in which case ping frames are
+     * handled automatically by Reactor Netty. If set to {@code true}, ping
+     * frames will be passed through to the {@link WebSocketHandler}.
+     *
+     * @param handlePing whether to let Ping frames through for handling
+     * @since 5.2.4
+     * @deprecated as of 5.2.6 in favor of providing a supplier of
+     * {@link WebsocketServerSpec.Builder} wiht a constructor argument.
+     */
+    @Deprecated
+    public void setHandlePing(boolean handlePing) {
+        this.handlePing = handlePing;
+    }
 
-		ServerHttpResponse response = exchange.getResponse();
-		HttpServerResponse reactorResponse = getNativeResponse(response);
-		HandshakeInfo handshakeInfo = handshakeInfoFactory.get();
-		NettyDataBufferFactory bufferFactory = (NettyDataBufferFactory) response.bufferFactory();
-		URI uri = exchange.getRequest().getURI();
+    @Override
+    public Mono<Void> upgrade(ServerWebExchange exchange, WebSocketHandler handler,
+                              @Nullable String subProtocol, Supplier<HandshakeInfo> handshakeInfoFactory) {
 
-		// Trigger WebFlux preCommit actions and upgrade
-		return response.setComplete()
-				.then(Mono.defer(() -> {
-					WebsocketServerSpec spec = buildSpec(subProtocol);
-					return reactorResponse.sendWebsocket((in, out) -> {
-						ReactorNettyWebSocketSession session =
-								new ReactorNettyWebSocketSession(
-										in, out, handshakeInfo, bufferFactory, spec.maxFramePayloadLength());
-						return handler.handle(session).checkpoint(uri + " [ReactorNettyRequestUpgradeStrategy]");
-					}, spec);
-				}));
-	}
+        ServerHttpResponse response = exchange.getResponse();
+        HttpServerResponse reactorResponse = getNativeResponse(response);
+        HandshakeInfo handshakeInfo = handshakeInfoFactory.get();
+        NettyDataBufferFactory bufferFactory = (NettyDataBufferFactory) response.bufferFactory();
+        URI uri = exchange.getRequest().getURI();
 
-	private static HttpServerResponse getNativeResponse(ServerHttpResponse response) {
-		if (response instanceof AbstractServerHttpResponse) {
-			return ((AbstractServerHttpResponse) response).getNativeResponse();
-		}
-		else if (response instanceof ServerHttpResponseDecorator) {
-			return getNativeResponse(((ServerHttpResponseDecorator) response).getDelegate());
-		}
-		else {
-			throw new IllegalArgumentException(
-					"Couldn't find native response in " + response.getClass().getName());
-		}
-	}
+        // Trigger WebFlux preCommit actions and upgrade
+        return response.setComplete()
+                .then(Mono.defer(() -> {
+                    WebsocketServerSpec spec = buildSpec(subProtocol);
+                    return reactorResponse.sendWebsocket((in, out) -> {
+                        ReactorNettyWebSocketSession session =
+                                new ReactorNettyWebSocketSession(
+                                        in, out, handshakeInfo, bufferFactory, spec.maxFramePayloadLength());
+                        return handler.handle(session).checkpoint(uri + " [ReactorNettyRequestUpgradeStrategy]");
+                    }, spec);
+                }));
+    }
 
 }

@@ -29,11 +29,11 @@ package org.springframework.asm;
  */
 public final class SpringAsmInfo {
 
-	/**
-	 * The ASM compatibility version for Spring's ASM visitor implementations:
-	 * currently {@link Opcodes#ASM8_EXPERIMENTAL}, as of Spring Framework 5.2.5.
-	 */
-	@SuppressWarnings("deprecation")
-	public static final int ASM_VERSION = Opcodes.ASM8_EXPERIMENTAL;
+    /**
+     * The ASM compatibility version for Spring's ASM visitor implementations:
+     * currently {@link Opcodes#ASM8_EXPERIMENTAL}, as of Spring Framework 5.2.5.
+     */
+    @SuppressWarnings("deprecation")
+    public static final int ASM_VERSION = Opcodes.ASM8_EXPERIMENTAL;
 
 }

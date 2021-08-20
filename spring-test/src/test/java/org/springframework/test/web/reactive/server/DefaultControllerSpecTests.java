@@ -16,10 +16,7 @@
 
 package org.springframework.test.web.reactive.server;
 
-import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerCodecConfigurer;
@@ -33,114 +30,117 @@ import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.ViewResolverRegistry;
 import org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer;
 
+import java.util.function.Consumer;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link DefaultControllerSpec}.
+ *
  * @author Rossen Stoyanchev
  */
 public class DefaultControllerSpecTests {
 
-	@Test
-	public void controller() {
-		new DefaultControllerSpec(new MyController()).build()
-				.get().uri("/")
-				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class).isEqualTo("Success");
-	}
+    @Test
+    public void controller() {
+        new DefaultControllerSpec(new MyController()).build()
+                .get().uri("/")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class).isEqualTo("Success");
+    }
 
-	@Test
-	public void controllerAdvice() {
-		new DefaultControllerSpec(new MyController())
-				.controllerAdvice(new MyControllerAdvice())
-				.build()
-				.get().uri("/exception")
-				.exchange()
-				.expectStatus().isBadRequest()
-				.expectBody(String.class).isEqualTo("Handled exception");
-	}
+    @Test
+    public void controllerAdvice() {
+        new DefaultControllerSpec(new MyController())
+                .controllerAdvice(new MyControllerAdvice())
+                .build()
+                .get().uri("/exception")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(String.class).isEqualTo("Handled exception");
+    }
 
-	@Test
-	public void controllerAdviceWithClassArgument() {
-		new DefaultControllerSpec(MyController.class)
-				.controllerAdvice(MyControllerAdvice.class)
-				.build()
-				.get().uri("/exception")
-				.exchange()
-				.expectStatus().isBadRequest()
-				.expectBody(String.class).isEqualTo("Handled exception");
-	}
+    @Test
+    public void controllerAdviceWithClassArgument() {
+        new DefaultControllerSpec(MyController.class)
+                .controllerAdvice(MyControllerAdvice.class)
+                .build()
+                .get().uri("/exception")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(String.class).isEqualTo("Handled exception");
+    }
 
-	@Test
-	public void configurerConsumers() {
-		TestConsumer<ArgumentResolverConfigurer> argumentResolverConsumer = new TestConsumer<>();
-		TestConsumer<RequestedContentTypeResolverBuilder> contenTypeResolverConsumer = new TestConsumer<>();
-		TestConsumer<CorsRegistry> corsRegistryConsumer = new TestConsumer<>();
-		TestConsumer<FormatterRegistry> formatterConsumer = new TestConsumer<>();
-		TestConsumer<ServerCodecConfigurer> codecsConsumer = new TestConsumer<>();
-		TestConsumer<PathMatchConfigurer> pathMatchingConsumer = new TestConsumer<>();
-		TestConsumer<ViewResolverRegistry> viewResolverConsumer = new TestConsumer<>();
+    @Test
+    public void configurerConsumers() {
+        TestConsumer<ArgumentResolverConfigurer> argumentResolverConsumer = new TestConsumer<>();
+        TestConsumer<RequestedContentTypeResolverBuilder> contenTypeResolverConsumer = new TestConsumer<>();
+        TestConsumer<CorsRegistry> corsRegistryConsumer = new TestConsumer<>();
+        TestConsumer<FormatterRegistry> formatterConsumer = new TestConsumer<>();
+        TestConsumer<ServerCodecConfigurer> codecsConsumer = new TestConsumer<>();
+        TestConsumer<PathMatchConfigurer> pathMatchingConsumer = new TestConsumer<>();
+        TestConsumer<ViewResolverRegistry> viewResolverConsumer = new TestConsumer<>();
 
-		new DefaultControllerSpec(new MyController())
-				.argumentResolvers(argumentResolverConsumer)
-				.contentTypeResolver(contenTypeResolverConsumer)
-				.corsMappings(corsRegistryConsumer)
-				.formatters(formatterConsumer)
-				.httpMessageCodecs(codecsConsumer)
-				.pathMatching(pathMatchingConsumer)
-				.viewResolvers(viewResolverConsumer)
-				.build();
+        new DefaultControllerSpec(new MyController())
+                .argumentResolvers(argumentResolverConsumer)
+                .contentTypeResolver(contenTypeResolverConsumer)
+                .corsMappings(corsRegistryConsumer)
+                .formatters(formatterConsumer)
+                .httpMessageCodecs(codecsConsumer)
+                .pathMatching(pathMatchingConsumer)
+                .viewResolvers(viewResolverConsumer)
+                .build();
 
-		assertThat(argumentResolverConsumer.getValue()).isNotNull();
-		assertThat(contenTypeResolverConsumer.getValue()).isNotNull();
-		assertThat(corsRegistryConsumer.getValue()).isNotNull();
-		assertThat(formatterConsumer.getValue()).isNotNull();
-		assertThat(codecsConsumer.getValue()).isNotNull();
-		assertThat(pathMatchingConsumer.getValue()).isNotNull();
-		assertThat(viewResolverConsumer.getValue()).isNotNull();
+        assertThat(argumentResolverConsumer.getValue()).isNotNull();
+        assertThat(contenTypeResolverConsumer.getValue()).isNotNull();
+        assertThat(corsRegistryConsumer.getValue()).isNotNull();
+        assertThat(formatterConsumer.getValue()).isNotNull();
+        assertThat(codecsConsumer.getValue()).isNotNull();
+        assertThat(pathMatchingConsumer.getValue()).isNotNull();
+        assertThat(viewResolverConsumer.getValue()).isNotNull();
 
-	}
-
-
-	@RestController
-	private static class MyController {
-
-		@GetMapping("/")
-		public String handle() {
-			return "Success";
-		}
-
-		@GetMapping("/exception")
-		public void handleWithError() {
-			throw new IllegalStateException();
-		}
-
-	}
+    }
 
 
-	@ControllerAdvice
-	private static class MyControllerAdvice {
+    @RestController
+    private static class MyController {
 
-		@ExceptionHandler
-		public ResponseEntity<String> handle(IllegalStateException ex) {
-			return ResponseEntity.status(400).body("Handled exception");
-		}
-	}
+        @GetMapping("/")
+        public String handle() {
+            return "Success";
+        }
+
+        @GetMapping("/exception")
+        public void handleWithError() {
+            throw new IllegalStateException();
+        }
+
+    }
 
 
-	private static class TestConsumer<T> implements Consumer<T> {
+    @ControllerAdvice
+    private static class MyControllerAdvice {
 
-		private T value;
+        @ExceptionHandler
+        public ResponseEntity<String> handle(IllegalStateException ex) {
+            return ResponseEntity.status(400).body("Handled exception");
+        }
+    }
 
-		public T getValue() {
-			return this.value;
-		}
 
-		@Override
-		public void accept(T t) {
-			this.value = t;
-		}
-	}
+    private static class TestConsumer<T> implements Consumer<T> {
+
+        private T value;
+
+        public T getValue() {
+            return this.value;
+        }
+
+        @Override
+        public void accept(T t) {
+            this.value = t;
+        }
+    }
 
 }

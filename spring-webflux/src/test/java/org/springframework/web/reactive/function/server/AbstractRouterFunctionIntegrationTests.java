@@ -24,16 +24,16 @@ import org.springframework.web.testfixture.http.server.reactive.bootstrap.Abstra
  */
 public abstract class AbstractRouterFunctionIntegrationTests extends AbstractHttpHandlerIntegrationTests {
 
-	@Override
-	protected final HttpHandler createHttpHandler() {
-		RouterFunction<?> routerFunction = routerFunction();
-		return RouterFunctions.toHttpHandler(routerFunction, handlerStrategies());
-	}
+    @Override
+    protected final HttpHandler createHttpHandler() {
+        RouterFunction<?> routerFunction = routerFunction();
+        return RouterFunctions.toHttpHandler(routerFunction, handlerStrategies());
+    }
 
-	protected abstract RouterFunction<?> routerFunction();
+    protected abstract RouterFunction<?> routerFunction();
 
-	protected HandlerStrategies handlerStrategies() {
-		return HandlerStrategies.withDefaults();
-	}
+    protected HandlerStrategies handlerStrategies() {
+        return HandlerStrategies.withDefaults();
+    }
 
 }

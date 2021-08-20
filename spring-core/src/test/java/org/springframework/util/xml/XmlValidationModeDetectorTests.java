@@ -16,10 +16,10 @@
 
 package org.springframework.util.xml;
 
-import java.io.InputStream;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.util.xml.XmlValidationModeDetector.VALIDATION_DTD;
@@ -32,15 +32,15 @@ import static org.springframework.util.xml.XmlValidationModeDetector.VALIDATION_
  */
 class XmlValidationModeDetectorTests {
 
-	private final XmlValidationModeDetector xmlValidationModeDetector = new XmlValidationModeDetector();
+    private final XmlValidationModeDetector xmlValidationModeDetector = new XmlValidationModeDetector();
 
 
-	@ParameterizedTest
-	@ValueSource(strings = { "dtdWithTrailingComment.xml", "dtdWithLeadingComment.xml", "dtdWithCommentOnNextLine.xml",
-		"dtdWithMultipleComments.xml" })
-	void dtdDetection(String fileName) throws Exception {
-		InputStream inputStream = getClass().getResourceAsStream(fileName);
-		assertThat(xmlValidationModeDetector.detectValidationMode(inputStream)).isEqualTo(VALIDATION_DTD);
-	}
+    @ParameterizedTest
+    @ValueSource(strings = {"dtdWithTrailingComment.xml", "dtdWithLeadingComment.xml", "dtdWithCommentOnNextLine.xml",
+            "dtdWithMultipleComments.xml"})
+    void dtdDetection(String fileName) throws Exception {
+        InputStream inputStream = getClass().getResourceAsStream(fileName);
+        assertThat(xmlValidationModeDetector.detectValidationMode(inputStream)).isEqualTo(VALIDATION_DTD);
+    }
 
 }

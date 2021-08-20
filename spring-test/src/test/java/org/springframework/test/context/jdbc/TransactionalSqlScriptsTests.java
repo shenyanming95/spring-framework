@@ -19,7 +19,6 @@ package org.springframework.test.context.jdbc;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -31,19 +30,19 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  */
 @SpringJUnitConfig(EmptyDatabaseConfig.class)
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-@Sql({ "schema.sql", "data.sql" })
+@Sql({"schema.sql", "data.sql"})
 @DirtiesContext
 class TransactionalSqlScriptsTests extends AbstractTransactionalTests {
 
-	@Test
-	void classLevelScripts() {
-		assertNumUsers(1);
-	}
+    @Test
+    void classLevelScripts() {
+        assertNumUsers(1);
+    }
 
-	@Test
-	@Sql({ "recreate-schema.sql", "data.sql", "data-add-dogbert.sql" })
-	void methodLevelScripts() {
-		assertNumUsers(2);
-	}
+    @Test
+    @Sql({"recreate-schema.sql", "data.sql", "data-add-dogbert.sql"})
+    void methodLevelScripts() {
+        assertNumUsers(2);
+    }
 
 }

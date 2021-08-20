@@ -61,103 +61,101 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(BindExceptionHandler.class)
 public abstract class AbstractMBeanServerTests {
 
-	protected MBeanServer server;
+    protected MBeanServer server;
 
 
-	@BeforeEach
-	public final void setUp() throws Exception {
-		this.server = MBeanServerFactory.createMBeanServer();
-		try {
-			onSetUp();
-		}
-		catch (Exception ex) {
-			releaseServer();
-			throw ex;
-		}
-	}
+    @BeforeEach
+    public final void setUp() throws Exception {
+        this.server = MBeanServerFactory.createMBeanServer();
+        try {
+            onSetUp();
+        } catch (Exception ex) {
+            releaseServer();
+            throw ex;
+        }
+    }
 
-	@AfterEach
-	public void tearDown() throws Exception {
-		releaseServer();
-		onTearDown();
-	}
+    @AfterEach
+    public void tearDown() throws Exception {
+        releaseServer();
+        onTearDown();
+    }
 
-	private void releaseServer() throws Exception {
-		try {
-			MBeanServerFactory.releaseMBeanServer(getServer());
-		}
-		catch (IllegalArgumentException ex) {
-			if (!ex.getMessage().contains("not in list")) {
-				throw ex;
-			}
-		}
-		MBeanTestUtils.resetMBeanServers();
-	}
+    private void releaseServer() throws Exception {
+        try {
+            MBeanServerFactory.releaseMBeanServer(getServer());
+        } catch (IllegalArgumentException ex) {
+            if (!ex.getMessage().contains("not in list")) {
+                throw ex;
+            }
+        }
+        MBeanTestUtils.resetMBeanServers();
+    }
 
-	protected final ConfigurableApplicationContext loadContext(String configLocation) {
-		GenericApplicationContext ctx = new GenericApplicationContext();
-		new XmlBeanDefinitionReader(ctx).loadBeanDefinitions(configLocation);
-		ctx.getDefaultListableBeanFactory().registerSingleton("server", getServer());
-		ctx.refresh();
-		return ctx;
-	}
+    protected final ConfigurableApplicationContext loadContext(String configLocation) {
+        GenericApplicationContext ctx = new GenericApplicationContext();
+        new XmlBeanDefinitionReader(ctx).loadBeanDefinitions(configLocation);
+        ctx.getDefaultListableBeanFactory().registerSingleton("server", getServer());
+        ctx.refresh();
+        return ctx;
+    }
 
-	protected void onSetUp() throws Exception {
-	}
+    protected void onSetUp() throws Exception {
+    }
 
-	protected void onTearDown() throws Exception {
-	}
+    protected void onTearDown() throws Exception {
+    }
 
-	protected final MBeanServer getServer() {
-		return this.server;
-	}
+    protected final MBeanServer getServer() {
+        return this.server;
+    }
 
-	/**
-	 * Start the specified {@link MBeanExporter}.
-	 */
-	protected void start(MBeanExporter exporter) {
-		exporter.afterPropertiesSet();
-		exporter.afterSingletonsInstantiated();
-	}
+    /**
+     * Start the specified {@link MBeanExporter}.
+     */
+    protected void start(MBeanExporter exporter) {
+        exporter.afterPropertiesSet();
+        exporter.afterSingletonsInstantiated();
+    }
 
-	protected void assertIsRegistered(String message, ObjectName objectName) {
-		assertThat(getServer().isRegistered(objectName)).as(message).isTrue();
-	}
+    protected void assertIsRegistered(String message, ObjectName objectName) {
+        assertThat(getServer().isRegistered(objectName)).as(message).isTrue();
+    }
 
-	protected void assertIsNotRegistered(String message, ObjectName objectName) {
-		assertThat(getServer().isRegistered(objectName)).as(message).isFalse();
-	}
+    protected void assertIsNotRegistered(String message, ObjectName objectName) {
+        assertThat(getServer().isRegistered(objectName)).as(message).isFalse();
+    }
 
 
-	static class BindExceptionHandler implements TestExecutionExceptionHandler, LifecycleMethodExecutionExceptionHandler {
+    static class BindExceptionHandler implements TestExecutionExceptionHandler, LifecycleMethodExecutionExceptionHandler {
 
-		@Override
-		public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
-			handleBindException(throwable);
-		}
+        @Override
+        public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
+            handleBindException(throwable);
+        }
 
-		@Override
-		public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable)
-				throws Throwable {
-			handleBindException(throwable);
-		}
+        @Override
+        public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable)
+                throws Throwable {
+            handleBindException(throwable);
+        }
 
-		@Override
-		public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable)
-				throws Throwable {
-			handleBindException(throwable);
-		}
+        @Override
+        public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable)
+                throws Throwable {
+            handleBindException(throwable);
+        }
 
-		private void handleBindException(Throwable throwable) throws Throwable {
-			// Abort test?
-			if (throwable instanceof BindException) {
-				throw new TestAbortedException("Failed to bind to MBeanServer", throwable);
-			}
-			// Else rethrow to conform to the contracts of TestExecutionExceptionHandler and LifecycleMethodExecutionExceptionHandler
-			throw throwable;
-		}
+        private void handleBindException(Throwable throwable) throws Throwable {
+            // Abort test?
+            if (throwable instanceof BindException) {
+                throw new TestAbortedException("Failed to bind to MBeanServer", throwable);
+            }
+            // Else rethrow to conform to the contracts of TestExecutionExceptionHandler and LifecycleMethodExecutionExceptionHandler
+            throw throwable;
+        }
 
-	}
+    }
 
 }
 

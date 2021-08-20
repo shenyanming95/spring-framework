@@ -16,12 +16,9 @@
 
 package org.springframework.web.method.annotation;
 
-import java.lang.reflect.Method;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -30,6 +27,8 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
 import org.springframework.web.testfixture.servlet.MockHttpServletResponse;
+
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,65 +39,65 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ExpressionValueMethodArgumentResolverTests {
 
-	private ExpressionValueMethodArgumentResolver resolver;
+    private ExpressionValueMethodArgumentResolver resolver;
 
-	private MethodParameter paramSystemProperty;
+    private MethodParameter paramSystemProperty;
 
-	private MethodParameter paramContextPath;
+    private MethodParameter paramContextPath;
 
-	private MethodParameter paramNotSupported;
+    private MethodParameter paramNotSupported;
 
-	private NativeWebRequest webRequest;
+    private NativeWebRequest webRequest;
 
-	@BeforeEach
-	@SuppressWarnings("resource")
-	public void setUp() throws Exception {
-		GenericWebApplicationContext context = new GenericWebApplicationContext();
-		context.refresh();
-		resolver = new ExpressionValueMethodArgumentResolver(context.getBeanFactory());
+    @BeforeEach
+    @SuppressWarnings("resource")
+    public void setUp() throws Exception {
+        GenericWebApplicationContext context = new GenericWebApplicationContext();
+        context.refresh();
+        resolver = new ExpressionValueMethodArgumentResolver(context.getBeanFactory());
 
-		Method method = getClass().getMethod("params", int.class, String.class, String.class);
-		paramSystemProperty = new MethodParameter(method, 0);
-		paramContextPath = new MethodParameter(method, 1);
-		paramNotSupported = new MethodParameter(method, 2);
+        Method method = getClass().getMethod("params", int.class, String.class, String.class);
+        paramSystemProperty = new MethodParameter(method, 0);
+        paramContextPath = new MethodParameter(method, 1);
+        paramNotSupported = new MethodParameter(method, 2);
 
-		webRequest = new ServletWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse());
+        webRequest = new ServletWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse());
 
-		// Expose request to the current thread (for SpEL expressions)
-		RequestContextHolder.setRequestAttributes(webRequest);
-	}
+        // Expose request to the current thread (for SpEL expressions)
+        RequestContextHolder.setRequestAttributes(webRequest);
+    }
 
-	@AfterEach
-	public void teardown() {
-		RequestContextHolder.resetRequestAttributes();
-	}
+    @AfterEach
+    public void teardown() {
+        RequestContextHolder.resetRequestAttributes();
+    }
 
-	@Test
-	public void supportsParameter() throws Exception {
-		assertThat(resolver.supportsParameter(paramSystemProperty)).isTrue();
-		assertThat(resolver.supportsParameter(paramContextPath)).isTrue();
-		assertThat(resolver.supportsParameter(paramNotSupported)).isFalse();
-	}
+    @Test
+    public void supportsParameter() throws Exception {
+        assertThat(resolver.supportsParameter(paramSystemProperty)).isTrue();
+        assertThat(resolver.supportsParameter(paramContextPath)).isTrue();
+        assertThat(resolver.supportsParameter(paramNotSupported)).isFalse();
+    }
 
-	@Test
-	public void resolveSystemProperty() throws Exception {
-		System.setProperty("systemProperty", "22");
-		Object value = resolver.resolveArgument(paramSystemProperty, null, webRequest, null);
-		System.clearProperty("systemProperty");
+    @Test
+    public void resolveSystemProperty() throws Exception {
+        System.setProperty("systemProperty", "22");
+        Object value = resolver.resolveArgument(paramSystemProperty, null, webRequest, null);
+        System.clearProperty("systemProperty");
 
-		assertThat(value).isEqualTo("22");
-	}
+        assertThat(value).isEqualTo("22");
+    }
 
-	@Test
-	public void resolveContextPath() throws Exception {
-		webRequest.getNativeRequest(MockHttpServletRequest.class).setContextPath("/contextPath");
-		Object value = resolver.resolveArgument(paramContextPath, null, webRequest, null);
+    @Test
+    public void resolveContextPath() throws Exception {
+        webRequest.getNativeRequest(MockHttpServletRequest.class).setContextPath("/contextPath");
+        Object value = resolver.resolveArgument(paramContextPath, null, webRequest, null);
 
-		assertThat(value).isEqualTo("/contextPath");
-	}
+        assertThat(value).isEqualTo("/contextPath");
+    }
 
-	public void params(@Value("#{systemProperties.systemProperty}") int param1,
-			@Value("#{request.contextPath}") String param2, String notSupported) {
-	}
+    public void params(@Value("#{systemProperties.systemProperty}") int param1,
+                       @Value("#{request.contextPath}") String param2, String notSupported) {
+    }
 
 }

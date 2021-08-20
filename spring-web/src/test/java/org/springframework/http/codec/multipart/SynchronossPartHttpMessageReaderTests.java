@@ -16,20 +16,8 @@
 
 package org.springframework.http.codec.multipart;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.time.Duration;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Subscription;
-import reactor.core.publisher.BaseSubscriber;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.core.io.ClassPathResource;
@@ -43,6 +31,17 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.testfixture.http.client.reactive.MockClientHttpRequest;
 import org.springframework.web.testfixture.http.server.reactive.MockServerHttpRequest;
+import reactor.core.publisher.BaseSubscriber;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.time.Duration;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
@@ -61,183 +60,182 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
  */
 public class SynchronossPartHttpMessageReaderTests extends AbstractLeakCheckingTests {
 
-	private final MultipartHttpMessageReader reader =
-			new MultipartHttpMessageReader(new SynchronossPartHttpMessageReader());
+    private static final ResolvableType PARTS_ELEMENT_TYPE =
+            forClassWithGenerics(MultiValueMap.class, String.class, Part.class);
+    private final MultipartHttpMessageReader reader =
+            new MultipartHttpMessageReader(new SynchronossPartHttpMessageReader());
 
-	private static final ResolvableType PARTS_ELEMENT_TYPE =
-			forClassWithGenerics(MultiValueMap.class, String.class, Part.class);
+    @Test
+    void canRead() {
+        assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_FORM_DATA)).isTrue();
+        assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_MIXED)).isTrue();
+        assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_RELATED)).isTrue();
+        assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, null)).isTrue();
 
+        assertThat(this.reader.canRead(
+                forClassWithGenerics(MultiValueMap.class, String.class, Object.class),
+                MediaType.MULTIPART_FORM_DATA)).isFalse();
 
-	@Test
-	void canRead() {
-		assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_FORM_DATA)).isTrue();
-		assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_MIXED)).isTrue();
-		assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, MediaType.MULTIPART_RELATED)).isTrue();
-		assertThat(this.reader.canRead(PARTS_ELEMENT_TYPE, null)).isTrue();
+        assertThat(this.reader.canRead(
+                forClassWithGenerics(MultiValueMap.class, String.class, String.class),
+                MediaType.MULTIPART_FORM_DATA)).isFalse();
 
-		assertThat(this.reader.canRead(
-				forClassWithGenerics(MultiValueMap.class, String.class, Object.class),
-				MediaType.MULTIPART_FORM_DATA)).isFalse();
+        assertThat(this.reader.canRead(
+                forClassWithGenerics(Map.class, String.class, String.class),
+                MediaType.MULTIPART_FORM_DATA)).isFalse();
 
-		assertThat(this.reader.canRead(
-				forClassWithGenerics(MultiValueMap.class, String.class, String.class),
-				MediaType.MULTIPART_FORM_DATA)).isFalse();
+        assertThat(this.reader.canRead(
+                forClassWithGenerics(MultiValueMap.class, String.class, Part.class),
+                MediaType.APPLICATION_FORM_URLENCODED)).isFalse();
+    }
 
-		assertThat(this.reader.canRead(
-				forClassWithGenerics(Map.class, String.class, String.class),
-				MediaType.MULTIPART_FORM_DATA)).isFalse();
+    @Test
+    void resolveParts() {
+        ServerHttpRequest request = generateMultipartRequest();
+        MultiValueMap<String, Part> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap()).block();
 
-		assertThat(this.reader.canRead(
-				forClassWithGenerics(MultiValueMap.class, String.class, Part.class),
-				MediaType.APPLICATION_FORM_URLENCODED)).isFalse();
-	}
+        assertThat(parts).containsOnlyKeys("filePart", "textPart");
 
-	@Test
-	void resolveParts() {
-		ServerHttpRequest request = generateMultipartRequest();
-		MultiValueMap<String, Part> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap()).block();
+        Part part = parts.getFirst("filePart");
+        assertThat(part).isInstanceOf(FilePart.class);
+        assertThat(part.name()).isEqualTo("filePart");
+        assertThat(((FilePart) part).filename()).isEqualTo("foo.txt");
+        DataBuffer buffer = DataBufferUtils.join(part.content()).block();
+        assertThat(buffer.toString(UTF_8)).isEqualTo("Lorem Ipsum.");
+        DataBufferUtils.release(buffer);
 
-		assertThat(parts).containsOnlyKeys("filePart", "textPart");
+        part = parts.getFirst("textPart");
+        assertThat(part).isInstanceOf(FormFieldPart.class);
+        assertThat(part.name()).isEqualTo("textPart");
+        assertThat(((FormFieldPart) part).value()).isEqualTo("sample-text");
+    }
 
-		Part part = parts.getFirst("filePart");
-		assertThat(part).isInstanceOf(FilePart.class);
-		assertThat(part.name()).isEqualTo("filePart");
-		assertThat(((FilePart) part).filename()).isEqualTo("foo.txt");
-		DataBuffer buffer = DataBufferUtils.join(part.content()).block();
-		assertThat(buffer.toString(UTF_8)).isEqualTo("Lorem Ipsum.");
-		DataBufferUtils.release(buffer);
+    @Test
+        // SPR-16545
+    void transferTo() throws IOException {
+        ServerHttpRequest request = generateMultipartRequest();
+        MultiValueMap<String, Part> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap()).block();
 
-		part = parts.getFirst("textPart");
-		assertThat(part).isInstanceOf(FormFieldPart.class);
-		assertThat(part.name()).isEqualTo("textPart");
-		assertThat(((FormFieldPart) part).value()).isEqualTo("sample-text");
-	}
+        assertThat(parts).isNotNull();
+        FilePart part = (FilePart) parts.getFirst("filePart");
+        assertThat(part).isNotNull();
 
-	@Test // SPR-16545
-	void transferTo() throws IOException {
-		ServerHttpRequest request = generateMultipartRequest();
-		MultiValueMap<String, Part> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap()).block();
+        File dest = File.createTempFile(part.filename(), "multipart");
+        part.transferTo(dest).block(Duration.ofSeconds(5));
 
-		assertThat(parts).isNotNull();
-		FilePart part = (FilePart) parts.getFirst("filePart");
-		assertThat(part).isNotNull();
+        assertThat(dest.exists()).isTrue();
+        assertThat(dest.length()).isEqualTo(12);
+        assertThat(dest.delete()).isTrue();
+    }
 
-		File dest = File.createTempFile(part.filename(), "multipart");
-		part.transferTo(dest).block(Duration.ofSeconds(5));
+    @Test
+    void bodyError() {
+        ServerHttpRequest request = generateErrorMultipartRequest();
+        StepVerifier.create(this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap())).verifyError();
+    }
 
-		assertThat(dest.exists()).isTrue();
-		assertThat(dest.length()).isEqualTo(12);
-		assertThat(dest.delete()).isTrue();
-	}
+    @Test
+    void readPartsWithoutDemand() {
+        ServerHttpRequest request = generateMultipartRequest();
+        Mono<MultiValueMap<String, Part>> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap());
+        ZeroDemandSubscriber subscriber = new ZeroDemandSubscriber();
+        parts.subscribe(subscriber);
+        subscriber.cancel();
+    }
 
-	@Test
-	void bodyError() {
-		ServerHttpRequest request = generateErrorMultipartRequest();
-		StepVerifier.create(this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap())).verifyError();
-	}
+    @Test
+    void gh23768() throws IOException {
+        ReadableByteChannel channel = new ClassPathResource("invalid.multipart", getClass()).readableChannel();
+        Flux<DataBuffer> body = DataBufferUtils.readByteChannel(() -> channel, this.bufferFactory, 1024);
 
-	@Test
-	void readPartsWithoutDemand() {
-		ServerHttpRequest request = generateMultipartRequest();
-		Mono<MultiValueMap<String, Part>> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap());
-		ZeroDemandSubscriber subscriber = new ZeroDemandSubscriber();
-		parts.subscribe(subscriber);
-		subscriber.cancel();
-	}
+        MediaType contentType = new MediaType("multipart", "form-data",
+                singletonMap("boundary", "NbjrKgjbsaMLdnMxMfDpD6myWomYc0qNX0w"));
+        ServerHttpRequest request = MockServerHttpRequest.post("/")
+                .contentType(contentType)
+                .body(body);
 
-	@Test
-	void gh23768() throws IOException {
-		ReadableByteChannel channel = new ClassPathResource("invalid.multipart", getClass()).readableChannel();
-		Flux<DataBuffer> body = DataBufferUtils.readByteChannel(() -> channel, this.bufferFactory, 1024);
+        Mono<MultiValueMap<String, Part>> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap());
 
-		MediaType contentType = new MediaType("multipart", "form-data",
-				singletonMap("boundary", "NbjrKgjbsaMLdnMxMfDpD6myWomYc0qNX0w"));
-		ServerHttpRequest request = MockServerHttpRequest.post("/")
-				.contentType(contentType)
-				.body(body);
+        StepVerifier.create(parts)
+                .assertNext(result -> assertThat(result).isEmpty())
+                .verifyComplete();
+    }
 
-		Mono<MultiValueMap<String, Part>> parts = this.reader.readMono(PARTS_ELEMENT_TYPE, request, emptyMap());
+    @Test
+    void readTooManyParts() {
+        testMultipartExceptions(reader -> reader.setMaxParts(1), ex -> {
+                    assertThat(ex)
+                            .isInstanceOf(DecodingException.class)
+                            .hasMessageStartingWith("Failure while parsing part[2]");
+                    assertThat(ex.getCause())
+                            .hasMessage("Too many parts (2 allowed)");
+                }
+        );
+    }
 
-		StepVerifier.create(parts)
-				.assertNext(result -> assertThat(result).isEmpty())
-				.verifyComplete();
-	}
+    @Test
+    void readFilePartTooBig() {
+        testMultipartExceptions(reader -> reader.setMaxDiskUsagePerPart(5), ex -> {
+                    assertThat(ex)
+                            .isInstanceOf(DecodingException.class)
+                            .hasMessageStartingWith("Failure while parsing part[1]");
+                    assertThat(ex.getCause())
+                            .hasMessage("Part[1] exceeded the disk usage limit of 5 bytes");
+                }
+        );
+    }
 
-	@Test
-	void readTooManyParts() {
-		testMultipartExceptions(reader -> reader.setMaxParts(1), ex -> {
-					assertThat(ex)
-							.isInstanceOf(DecodingException.class)
-							.hasMessageStartingWith("Failure while parsing part[2]");
-					assertThat(ex.getCause())
-							.hasMessage("Too many parts (2 allowed)");
-				}
-		);
-	}
+    @Test
+    void readPartHeadersTooBig() {
+        testMultipartExceptions(reader -> reader.setMaxInMemorySize(1), ex -> {
+                    assertThat(ex)
+                            .isInstanceOf(DecodingException.class)
+                            .hasMessageStartingWith("Failure while parsing part[1]");
+                    assertThat(ex.getCause())
+                            .hasMessage("Part[1] exceeded the in-memory limit of 1 bytes");
+                }
+        );
+    }
 
-	@Test
-	void readFilePartTooBig() {
-		testMultipartExceptions(reader -> reader.setMaxDiskUsagePerPart(5), ex -> {
-					assertThat(ex)
-							.isInstanceOf(DecodingException.class)
-							.hasMessageStartingWith("Failure while parsing part[1]");
-					assertThat(ex.getCause())
-							.hasMessage("Part[1] exceeded the disk usage limit of 5 bytes");
-				}
-		);
-	}
+    private void testMultipartExceptions(
+            Consumer<SynchronossPartHttpMessageReader> configurer, Consumer<Throwable> assertions) {
 
-	@Test
-	void readPartHeadersTooBig() {
-		testMultipartExceptions(reader -> reader.setMaxInMemorySize(1), ex -> {
-					assertThat(ex)
-							.isInstanceOf(DecodingException.class)
-							.hasMessageStartingWith("Failure while parsing part[1]");
-					assertThat(ex.getCause())
-							.hasMessage("Part[1] exceeded the in-memory limit of 1 bytes");
-				}
-		);
-	}
+        SynchronossPartHttpMessageReader reader = new SynchronossPartHttpMessageReader();
+        configurer.accept(reader);
+        MultipartHttpMessageReader multipartReader = new MultipartHttpMessageReader(reader);
+        StepVerifier.create(multipartReader.readMono(PARTS_ELEMENT_TYPE, generateMultipartRequest(), emptyMap()))
+                .consumeErrorWith(assertions)
+                .verify();
+    }
 
-	private void testMultipartExceptions(
-			Consumer<SynchronossPartHttpMessageReader> configurer, Consumer<Throwable> assertions) {
+    private ServerHttpRequest generateMultipartRequest() {
+        MultipartBodyBuilder partsBuilder = new MultipartBodyBuilder();
+        partsBuilder.part("filePart", new ClassPathResource("org/springframework/http/codec/multipart/foo.txt"));
+        partsBuilder.part("textPart", "sample-text");
 
-		SynchronossPartHttpMessageReader reader = new SynchronossPartHttpMessageReader();
-		configurer.accept(reader);
-		MultipartHttpMessageReader multipartReader = new MultipartHttpMessageReader(reader);
-		StepVerifier.create(multipartReader.readMono(PARTS_ELEMENT_TYPE, generateMultipartRequest(), emptyMap()))
-				.consumeErrorWith(assertions)
-				.verify();
-	}
+        MockClientHttpRequest outputMessage = new MockClientHttpRequest(HttpMethod.POST, "/");
+        new MultipartHttpMessageWriter()
+                .write(Mono.just(partsBuilder.build()), null, MediaType.MULTIPART_FORM_DATA, outputMessage, null)
+                .block(Duration.ofSeconds(5));
+        Flux<DataBuffer> requestBody = outputMessage.getBody()
+                .map(buffer -> this.bufferFactory.wrap(buffer.asByteBuffer()));
+        return MockServerHttpRequest.post("/")
+                .contentType(outputMessage.getHeaders().getContentType())
+                .body(requestBody);
+    }
 
-	private ServerHttpRequest generateMultipartRequest() {
-		MultipartBodyBuilder partsBuilder = new MultipartBodyBuilder();
-		partsBuilder.part("filePart", new ClassPathResource("org/springframework/http/codec/multipart/foo.txt"));
-		partsBuilder.part("textPart", "sample-text");
+    private ServerHttpRequest generateErrorMultipartRequest() {
+        return MockServerHttpRequest.post("/")
+                .header(CONTENT_TYPE, MULTIPART_FORM_DATA.toString())
+                .body(Flux.just(this.bufferFactory.wrap("invalid content".getBytes())));
+    }
 
-		MockClientHttpRequest outputMessage = new MockClientHttpRequest(HttpMethod.POST, "/");
-		new MultipartHttpMessageWriter()
-				.write(Mono.just(partsBuilder.build()), null, MediaType.MULTIPART_FORM_DATA, outputMessage, null)
-				.block(Duration.ofSeconds(5));
-		Flux<DataBuffer> requestBody = outputMessage.getBody()
-				.map(buffer -> this.bufferFactory.wrap(buffer.asByteBuffer()));
-		return MockServerHttpRequest.post("/")
-				.contentType(outputMessage.getHeaders().getContentType())
-				.body(requestBody);
-	}
+    private static class ZeroDemandSubscriber extends BaseSubscriber<MultiValueMap<String, Part>> {
 
-	private ServerHttpRequest generateErrorMultipartRequest() {
-		return MockServerHttpRequest.post("/")
-				.header(CONTENT_TYPE, MULTIPART_FORM_DATA.toString())
-				.body(Flux.just(this.bufferFactory.wrap("invalid content".getBytes())));
-	}
-
-	private static class ZeroDemandSubscriber extends BaseSubscriber<MultiValueMap<String, Part>> {
-
-		@Override
-		protected void hookOnSubscribe(Subscription subscription) {
-			// Just subscribe without requesting
-		}
-	}
+        @Override
+        protected void hookOnSubscribe(Subscription subscription) {
+            // Just subscribe without requesting
+        }
+    }
 
 }

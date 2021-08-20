@@ -27,20 +27,20 @@ import javax.servlet.http.Part
  * @author Sebastien Deleuze
  * @since 5.2
  */
-class MockMultipartHttpServletRequestDsl internal constructor (private val builder: MockMultipartHttpServletRequestBuilder) : MockHttpServletRequestDsl(builder) {
+class MockMultipartHttpServletRequestDsl internal constructor(private val builder: MockMultipartHttpServletRequestBuilder) : MockHttpServletRequestDsl(builder) {
 
-	/**
-	 * @see [MockMultipartHttpServletRequestBuilder.file]
-	 */
-	fun file(name: String, content: ByteArray) = builder.file(name, content)
+    /**
+     * @see [MockMultipartHttpServletRequestBuilder.file]
+     */
+    fun file(name: String, content: ByteArray) = builder.file(name, content)
 
-	/**
-	 * @see [MockMultipartHttpServletRequestBuilder.file]
-	 */
-	fun file(file: MockMultipartFile) = builder.file(file)
+    /**
+     * @see [MockMultipartHttpServletRequestBuilder.file]
+     */
+    fun file(file: MockMultipartFile) = builder.file(file)
 
-	/**
-	 * @see [MockMultipartHttpServletRequestBuilder.part]
-	 */
-	fun part(vararg parts: Part) = builder.part(*parts)
+    /**
+     * @see [MockMultipartHttpServletRequestBuilder.part]
+     */
+    fun part(vararg parts: Part) = builder.part(*parts)
 }

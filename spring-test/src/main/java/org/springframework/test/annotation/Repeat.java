@@ -16,11 +16,7 @@
 
 package org.springframework.test.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Test annotation for use with JUnit 4 to indicate that a test method should be
@@ -35,20 +31,20 @@ import java.lang.annotation.Target;
  *
  * @author Rod Johnson
  * @author Sam Brannen
- * @since 2.0
  * @see org.springframework.test.annotation.Timed
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see org.springframework.test.context.junit4.rules.SpringMethodRule
  * @see org.springframework.test.context.junit4.statements.SpringRepeat
+ * @since 2.0
  */
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Repeat {
 
-	/**
-	 * The number of times that the annotated test method should be repeated.
-	 */
-	int value() default 1;
+    /**
+     * The number of times that the annotated test method should be repeated.
+     */
+    int value() default 1;
 
 }

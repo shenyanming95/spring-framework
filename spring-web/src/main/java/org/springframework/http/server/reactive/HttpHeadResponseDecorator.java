@@ -17,12 +17,11 @@
 package org.springframework.http.server.reactive;
 
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * {@link ServerHttpResponse} decorator for HTTP HEAD requests.
@@ -33,50 +32,49 @@ import org.springframework.http.HttpHeaders;
 public class HttpHeadResponseDecorator extends ServerHttpResponseDecorator {
 
 
-	public HttpHeadResponseDecorator(ServerHttpResponse delegate) {
-		super(delegate);
-	}
+    public HttpHeadResponseDecorator(ServerHttpResponse delegate) {
+        super(delegate);
+    }
 
 
-	/**
-	 * Consume and release the body without writing.
-	 * <p>If the headers contain neither Content-Length nor Transfer-Encoding,
-	 * count the bytes and set Content-Length.
-	 */
-	@Override
-	public final Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-		if (shouldSetContentLength()) {
-			return Flux.from(body)
-					.reduce(0, (current, buffer) -> {
-						int next = current + buffer.readableByteCount();
-						DataBufferUtils.release(buffer);
-						return next;
-					})
-					.doOnNext(length -> getHeaders().setContentLength(length))
-					.then();
-		}
-		else {
-			return Flux.from(body)
-					.doOnNext(DataBufferUtils::release)
-					.then();
-		}
-	}
+    /**
+     * Consume and release the body without writing.
+     * <p>If the headers contain neither Content-Length nor Transfer-Encoding,
+     * count the bytes and set Content-Length.
+     */
+    @Override
+    public final Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+        if (shouldSetContentLength()) {
+            return Flux.from(body)
+                    .reduce(0, (current, buffer) -> {
+                        int next = current + buffer.readableByteCount();
+                        DataBufferUtils.release(buffer);
+                        return next;
+                    })
+                    .doOnNext(length -> getHeaders().setContentLength(length))
+                    .then();
+        } else {
+            return Flux.from(body)
+                    .doOnNext(DataBufferUtils::release)
+                    .then();
+        }
+    }
 
-	private boolean shouldSetContentLength() {
-		return (getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH) == null &&
-				getHeaders().getFirst(HttpHeaders.TRANSFER_ENCODING) == null);
-	}
+    private boolean shouldSetContentLength() {
+        return (getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH) == null &&
+                getHeaders().getFirst(HttpHeaders.TRANSFER_ENCODING) == null);
+    }
 
-	/**
-	 * Invoke {@link #setComplete()} without writing.
-	 * <p>RFC 7302 allows HTTP HEAD response without content-length and it's not
-	 * something that can be computed on a streaming response.
-	 */
-	@Override
-	public final Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
-		// Not feasible to count bytes on potentially streaming response.
-		// RFC 7302 allows HEAD without content-length.
-		return setComplete();
-	}
+    /**
+     * Invoke {@link #setComplete()} without writing.
+     * <p>RFC 7302 allows HTTP HEAD response without content-length and it's not
+     * something that can be computed on a streaming response.
+     */
+    @Override
+    public final Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
+        // Not feasible to count bytes on potentially streaming response.
+        // RFC 7302 allows HEAD without content-length.
+        return setComplete();
+    }
 
 }

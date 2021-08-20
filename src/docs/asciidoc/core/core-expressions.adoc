@@ -1,34 +1,23 @@
 [[expressions]]
 = Spring Expression Language (SpEL)
 
-The Spring Expression Language ("`SpEL`" for short) is a powerful expression language that
-supports querying and manipulating an object graph at runtime. The language syntax is
-similar to Unified EL but offers additional features, most notably method invocation and
-basic string templating functionality.
+The Spring Expression Language ("`SpEL`" for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.
+The language syntax is similar to Unified EL but offers additional features, most notably method invocation and basic string templating functionality.
 
-While there are several other Java expression languages available -- OGNL, MVEL, and JBoss
-EL, to name a few -- the Spring Expression Language was created to provide the Spring
-community with a single well supported expression language that can be used across all
-the products in the Spring portfolio. Its language features are driven by the
-requirements of the projects in the Spring portfolio, including tooling requirements
-for code completion support within the https://spring.io/tools[Spring Tools for Eclipse].
-That said, SpEL is based on a technology-agnostic API that lets other expression language
-implementations be integrated, should the need arise.
+While there are several other Java expression languages available -- OGNL, MVEL, and JBoss EL, to name a few -- the Spring Expression Language was created to provide the Spring community with a single well supported expression language that can be used across all the products in the Spring portfolio.
+Its language features are driven by the requirements of the projects in the Spring portfolio, including tooling requirements for code completion support within the https://spring.io/tools[Spring Tools for Eclipse].
+That said, SpEL is based on a technology-agnostic API that lets other expression language implementations be integrated, should the need arise.
 
-While SpEL serves as the foundation for expression evaluation within the Spring
-portfolio, it is not directly tied to Spring and can be used independently. To
-be self contained, many of the examples in this chapter use SpEL as if it were an
-independent expression language. This requires creating a few bootstrapping
-infrastructure classes, such as the parser. Most Spring users need not deal with
-this infrastructure and can, instead, author only expression strings for evaluation.
-An example of this typical use is the integration of SpEL into creating XML or
-annotation-based bean definitions, as shown in
+While SpEL serves as the foundation for expression evaluation within the Spring portfolio, it is not directly tied to Spring and can be used independently.
+To be self contained, many of the examples in this chapter use SpEL as if it were an independent expression language.
+This requires creating a few bootstrapping infrastructure classes, such as the parser.
+Most Spring users need not deal with this infrastructure and can, instead, author only expression strings for evaluation.
+An example of this typical use is the integration of SpEL into creating XML or annotation-based bean definitions, as shown in
 <<expressions-beandef, Expression support for defining bean definitions>>.
 
-This chapter covers the features of the expression language, its API, and its language
-syntax. In several places, `Inventor` and `Society` classes are used as the target
-objects for expression evaluation. These class declarations and the data used to
-populate them are listed at the end of the chapter.
+This chapter covers the features of the expression language, its API, and its language syntax.
+In several places, `Inventor` and `Society` classes are used as the target objects for expression evaluation.
+These class declarations and the data used to populate them are listed at the end of the chapter.
 
 The expression language supports the following functionality:
 
@@ -51,9 +40,6 @@ The expression language supports the following functionality:
 * Collection projection
 * Collection selection
 * Templated expressions
-
-
-
 
 [[expressions-evaluation]]
 == Evaluation
@@ -83,19 +69,16 @@ The following code introduces the SpEL API to evaluate the literal string expres
 ----
 <1> The value of the message variable is `'Hello World'`.
 
-
 The SpEL classes and interfaces you are most likely to use are located in the
 `org.springframework.expression` package and its sub-packages, such as `spel.support`.
 
-The `ExpressionParser` interface is responsible for parsing an expression string. In
-the preceding example, the expression string is a string literal denoted by the surrounding single
-quotation marks. The `Expression` interface is responsible for evaluating the previously defined
-expression string. Two exceptions that can be thrown, `ParseException` and
-`EvaluationException`, when calling `parser.parseExpression` and `exp.getValue`,
-respectively.
+The `ExpressionParser` interface is responsible for parsing an expression string.
+In the preceding example, the expression string is a string literal denoted by the surrounding single quotation marks.
+The `Expression` interface is responsible for evaluating the previously defined expression string.
+Two exceptions that can be thrown, `ParseException` and
+`EvaluationException`, when calling `parser.parseExpression` and `exp.getValue`, respectively.
 
-SpEL supports a wide range of features, such as calling methods, accessing properties,
-and calling constructors.
+SpEL supports a wide range of features, such as calling methods, accessing properties, and calling constructors.
 
 In the following example of method invocation, we call the `concat` method on the string literal:
 
@@ -169,8 +152,7 @@ The following example shows how to use dot notation to get the length of a liter
 ----
 <1> `'Hello World'.bytes.length` gives the length of the literal.
 
-The String's constructor can be called instead of using a string literal, as the following
-example shows:
+The String's constructor can be called instead of using a string literal, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -190,16 +172,12 @@ example shows:
 ----
 <1> Construct a new `String` from the literal and make it be upper case.
 
-
 Note the use of the generic method: `public <T> T getValue(Class<T> desiredResultType)`.
-Using this method removes the need to cast the value of the expression to the desired
-result type. An `EvaluationException` is thrown if the value cannot be cast to the
-type `T` or converted by using the registered type converter.
+Using this method removes the need to cast the value of the expression to the desired result type.
+An `EvaluationException` is thrown if the value cannot be cast to the type `T` or converted by using the registered type converter.
 
-The more common usage of SpEL is to provide an expression string that is evaluated
-against a specific object instance (called the root object). The following example shows
-how to retrieve the `name` property from an instance of the `Inventor` class or
-create a boolean condition:
+The more common usage of SpEL is to provide an expression string that is evaluated against a specific object instance (called the root object).
+The following example shows how to retrieve the `name` property from an instance of the `Inventor` class or create a boolean condition:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -221,6 +199,7 @@ create a boolean condition:
 	boolean result = exp.getValue(tesla, Boolean.class);
 	// result == true
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -242,52 +221,41 @@ create a boolean condition:
 	// result == true
 ----
 
-
-
-
 [[expressions-evaluation-context]]
 === Understanding `EvaluationContext`
 
-The `EvaluationContext` interface is used when evaluating an expression to resolve
-properties, methods, or fields and to help perform type conversion. Spring provides two
-implementations.
+The `EvaluationContext` interface is used when evaluating an expression to resolve properties, methods, or fields and to help perform type conversion.
+Spring provides two implementations.
 
-* `SimpleEvaluationContext`: Exposes a subset of essential SpEL language features and
-configuration options, for categories of expressions that do not require the full extent
-of the SpEL language syntax and should be meaningfully restricted. Examples include but
-are not limited to data binding expressions and property-based filters.
+* `SimpleEvaluationContext`: Exposes a subset of essential SpEL language features and configuration options, for categories of expressions that do not require the full extent of the SpEL language syntax and should be meaningfully restricted.
+Examples include but are not limited to data binding expressions and property-based filters.
 
-* `StandardEvaluationContext`: Exposes the full set of SpEL language features and
-configuration options. You can use it to specify a default root object and to configure
-every available evaluation-related strategy.
+* `StandardEvaluationContext`: Exposes the full set of SpEL language features and configuration options.
+You can use it to specify a default root object and to configure every available evaluation-related strategy.
 
 `SimpleEvaluationContext` is designed to support only a subset of the SpEL language syntax.
-It excludes Java type references, constructors, and bean references. It also requires
-you to explicitly choose the level of support for properties and methods in expressions.
+It excludes Java type references, constructors, and bean references.
+It also requires you to explicitly choose the level of support for properties and methods in expressions.
 By default, the `create()` static factory method enables only read access to properties.
-You can also obtain a builder to configure the exact level of support needed, targeting
-one or some combination of the following:
+You can also obtain a builder to configure the exact level of support needed, targeting one or some combination of the following:
 
 * Custom `PropertyAccessor` only (no reflection)
 * Data binding properties for read-only access
 * Data binding properties for read and write
 
-
 [[expressions-type-conversion]]
 ==== Type Conversion
 
-By default, SpEL uses the conversion service available in Spring core
-(`org.springframework.core.convert.ConversionService`). This conversion service comes
-with many built-in converters for common conversions but is also fully extensible so that
-you can add custom conversions between types. Additionally, it is
-generics-aware. This means that, when you work with generic types in
-expressions, SpEL attempts conversions to maintain type correctness for any objects
-it encounters.
+By default, SpEL uses the conversion service available in Spring core (`org.springframework.core.convert.ConversionService`).
+This conversion service comes with many built-in converters for common conversions but is also fully extensible so that you can add custom conversions between types.
+Additionally, it is generics-aware.
+This means that, when you work with generic types in expressions, SpEL attempts conversions to maintain type correctness for any objects it encounters.
 
-What does this mean in practice? Suppose assignment, using `setValue()`, is being used
-to set a `List` property. The type of the property is actually `List<Boolean>`. SpEL
-recognizes that the elements of the list need to be converted to `Boolean` before
-being placed in it. The following example shows how to do so:
+What does this mean in practice?
+Suppose assignment, using `setValue()`, is being used to set a `List` property.
+The type of the property is actually `List<Boolean>`.
+SpEL recognizes that the elements of the list need to be converted to `Boolean` before being placed in it.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -308,6 +276,7 @@ being placed in it. The following example shows how to do so:
 	// b is false
 	Boolean b = simple.booleanList.get(0);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -328,19 +297,15 @@ being placed in it. The following example shows how to do so:
 	val b = simple.booleanList[0]
 ----
 
-
 [[expressions-parser-configuration]]
 === Parser Configuration
 
-It is possible to configure the SpEL expression parser by using a parser configuration object
-(`org.springframework.expression.spel.SpelParserConfiguration`). The configuration
-object controls the behavior of some of the expression components. For example, if you
-index into an array or collection and the element at the specified index is `null`,
-you can automatically create the element. This is useful when using expressions made up of a
-chain of property references. If you index into an array or list
-and specifying an index that is beyond the end of the current size of the array or
-list, you can automatically grow the array or list to accommodate that index. The following
-example demonstrates how to automatically grow the list:
+It is possible to configure the SpEL expression parser by using a parser configuration object (`org.springframework.expression.spel.SpelParserConfiguration`).
+The configuration object controls the behavior of some of the expression components.
+For example, if you index into an array or collection and the element at the specified index is `null`, you can automatically create the element.
+This is useful when using expressions made up of a chain of property references.
+If you index into an array or list and specifying an index that is beyond the end of the current size of the array or list, you can automatically grow the array or list to accommodate that index.
+The following example demonstrates how to automatically grow the list:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -365,6 +330,7 @@ example demonstrates how to automatically grow the list:
 	// demo.list will now be a real collection of 4 entries
 	// Each entry is a new empty String
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -389,27 +355,19 @@ example demonstrates how to automatically grow the list:
 	// Each entry is a new empty String
 ----
 
-
-
 [[expressions-spel-compilation]]
 === SpEL Compilation
 
-Spring Framework 4.1 includes a basic expression compiler. Expressions are usually
-interpreted, which provides a lot of dynamic flexibility during evaluation but
-does not provide optimum performance. For occasional expression usage,
-this is fine, but, when used by other components such as Spring Integration,
-performance can be very important, and there is no real need for the dynamism.
+Spring Framework 4.1 includes a basic expression compiler.
+Expressions are usually interpreted, which provides a lot of dynamic flexibility during evaluation but does not provide optimum performance.
+For occasional expression usage, this is fine, but, when used by other components such as Spring Integration, performance can be very important, and there is no real need for the dynamism.
 
-The SpEL compiler is intended to address this need. During evaluation, the compiler
-generates a Java class that embodies the expression behavior at runtime and uses that
-class to achieve much faster expression evaluation. Due to the lack of typing around
-expressions, the compiler uses information gathered during the interpreted evaluations
-of an expression when performing compilation. For example, it does not know the type
-of a property reference purely from the expression, but during the first interpreted
-evaluation, it finds out what it is. Of course, basing compilation on such derived
-information can cause trouble later if the types of the various expression elements
-change over time. For this reason, compilation is best suited to expressions whose
-type information is not going to change on repeated evaluations.
+The SpEL compiler is intended to address this need.
+During evaluation, the compiler generates a Java class that embodies the expression behavior at runtime and uses that class to achieve much faster expression evaluation.
+Due to the lack of typing around expressions, the compiler uses information gathered during the interpreted evaluations of an expression when performing compilation.
+For example, it does not know the type of a property reference purely from the expression, but during the first interpreted evaluation, it finds out what it is.
+Of course, basing compilation on such derived information can cause trouble later if the types of the various expression elements change over time.
+For this reason, compilation is best suited to expressions whose type information is not going to change on repeated evaluations.
 
 Consider the following basic expression:
 
@@ -417,44 +375,35 @@ Consider the following basic expression:
 someArray[0].someProperty.someOtherProperty < 0.1
 ----
 
-Because the preceding expression involves array access, some property de-referencing,
-and numeric operations, the performance gain can be very noticeable. In an example
-micro benchmark run of 50000 iterations, it took 75ms to evaluate by using the
-interpreter and only 3ms using the compiled version of the expression.
-
+Because the preceding expression involves array access, some property de-referencing, and numeric operations, the performance gain can be very noticeable.
+In an example micro benchmark run of 50000 iterations, it took 75ms to evaluate by using the interpreter and only 3ms using the compiled version of the expression.
 
 [[expressions-compiler-configuration]]
 ==== Compiler Configuration
 
-The compiler is not turned on by default, but you can turn it on in either of two
-different ways. You can turn it on by using the parser configuration process
-(<<expressions-parser-configuration, discussed earlier>>) or by using a system
-property when SpEL usage is embedded inside another component. This section
-discusses both of these options.
+The compiler is not turned on by default, but you can turn it on in either of two different ways.
+You can turn it on by using the parser configuration process (<<expressions-parser-configuration, discussed earlier>>) or by using a system property when SpEL usage is embedded inside another component.
+This section discusses both of these options.
 
 The compiler can operate in one of three modes, which are captured in the
-`org.springframework.expression.spel.SpelCompilerMode` enum. The modes are as follows:
+`org.springframework.expression.spel.SpelCompilerMode` enum.
+The modes are as follows:
 
 * `OFF` (default): The compiler is switched off.
-* `IMMEDIATE`: In immediate mode, the expressions are compiled as soon as possible. This
-is typically after the first interpreted evaluation. If the compiled expression fails
-(typically due to a type changing, as described earlier), the caller of the expression
-evaluation receives an exception.
-* `MIXED`: In mixed mode, the expressions silently switch between interpreted and compiled
-mode over time. After some number of interpreted runs, they switch to compiled
-form and, if something goes wrong with the compiled form (such as a type changing, as
-described earlier), the expression automatically switches back to interpreted form
-again. Sometime later, it may generate another compiled form and switch to it. Basically,
-the exception that the user gets in `IMMEDIATE` mode is instead handled internally.
+* `IMMEDIATE`: In immediate mode, the expressions are compiled as soon as possible.
+This is typically after the first interpreted evaluation.
+If the compiled expression fails (typically due to a type changing, as described earlier), the caller of the expression evaluation receives an exception.
+* `MIXED`: In mixed mode, the expressions silently switch between interpreted and compiled mode over time.
+After some number of interpreted runs, they switch to compiled form and, if something goes wrong with the compiled form (such as a type changing, as described earlier), the expression automatically switches back to interpreted form again.
+Sometime later, it may generate another compiled form and switch to it.
+Basically, the exception that the user gets in `IMMEDIATE` mode is instead handled internally.
 
-`IMMEDIATE` mode exists because `MIXED` mode could cause issues for expressions that
-have side effects. If a compiled expression blows up after partially succeeding, it
-may have already done something that has affected the state of the system. If this
-has happened, the caller may not want it to silently re-run in interpreted mode,
-since part of the expression may be running twice.
+`IMMEDIATE` mode exists because `MIXED` mode could cause issues for expressions that have side effects.
+If a compiled expression blows up after partially succeeding, it may have already done something that has affected the state of the system.
+If this has happened, the caller may not want it to silently re-run in interpreted mode, since part of the expression may be running twice.
 
-After selecting a mode, use the `SpelParserConfiguration` to configure the parser. The
-following example shows how to do so:
+After selecting a mode, use the `SpelParserConfiguration` to configure the parser.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -470,6 +419,7 @@ following example shows how to do so:
 
 	Object payload = expr.getValue(message);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -487,23 +437,21 @@ following example shows how to do so:
 
 When you specify the compiler mode, you can also specify a classloader (passing null is allowed).
 Compiled expressions are defined in a child classloader created under any that is supplied.
-It is important to ensure that, if a classloader is specified, it can see all the types involved in
-the expression evaluation process. If you do not specify a classloader, a default classloader is used
-(typically the context classloader for the thread that is running during expression evaluation).
+It is important to ensure that, if a classloader is specified, it can see all the types involved in the expression evaluation process.
+If you do not specify a classloader, a default classloader is used (typically the context classloader for the thread that is running during expression evaluation).
 
-The second way to configure the compiler is for use when SpEL is embedded inside some other
-component and it may not be possible to configure it through a configuration object. In these
-cases, it is possible to use a system property. You can set the `spring.expression.compiler.mode`
+The second way to configure the compiler is for use when SpEL is embedded inside some other component and it may not be possible to configure it through a configuration object.
+In these cases, it is possible to use a system property.
+You can set the `spring.expression.compiler.mode`
 property to one of the `SpelCompilerMode` enum values (`off`, `immediate`, or `mixed`).
-
 
 [[expressions-compiler-limitations]]
 ==== Compiler Limitations
 
-Since Spring Framework 4.1, the basic compilation framework is in place. However, the framework
-does not yet support compiling every kind of expression. The initial focus has been on the
-common expressions that are likely to be used in performance-critical contexts. The following
-kinds of expression cannot be compiled at the moment:
+Since Spring Framework 4.1, the basic compilation framework is in place.
+However, the framework does not yet support compiling every kind of expression.
+The initial focus has been on the common expressions that are likely to be used in performance-critical contexts.
+The following kinds of expression cannot be compiled at the moment:
 
 * Expressions involving assignment
 * Expressions relying on the conversion service
@@ -512,23 +460,16 @@ kinds of expression cannot be compiled at the moment:
 
 More types of expression will be compilable in the future.
 
-
-
-
 [[expressions-beandef]]
 == Expressions in Bean Definitions
 
-You can use SpEL expressions with XML-based or annotation-based configuration metadata for
-defining `BeanDefinition` instances. In both cases, the syntax to define the expression is of the
-form `#{ <expression string> }`.
-
-
+You can use SpEL expressions with XML-based or annotation-based configuration metadata for defining `BeanDefinition` instances.
+In both cases, the syntax to define the expression is of the form `#{ <expression string> }`.
 
 [[expressions-beandef-xml-based]]
 === XML Configuration
 
-A property or constructor argument value can be set by using expressions, as the following
-example shows:
+A property or constructor argument value can be set by using expressions, as the following example shows:
 
 [source,xml,indent=0,subs="verbatim"]
 ----
@@ -539,8 +480,8 @@ example shows:
 	</bean>
 ----
 
-All beans in the application context are available as predefined variables with their
-common bean name. This includes standard context beans such as `environment` (of type
+All beans in the application context are available as predefined variables with their common bean name.
+This includes standard context beans such as `environment` (of type
 `org.springframework.core.env.Environment`) as well as `systemProperties` and
 `systemEnvironment` (of type `Map<String, Object>`) for access to the runtime environment.
 
@@ -574,13 +515,10 @@ You can also refer to other bean properties by name, as the following example sh
 	</bean>
 ----
 
-
-
 [[expressions-beandef-annotation-based]]
 === Annotation Configuration
 
-To specify a default value, you can place the `@Value` annotation on fields, methods,
-and method or constructor parameters.
+To specify a default value, you can place the `@Value` annotation on fields, methods, and method or constructor parameters.
 
 The following example sets the default value of a field variable:
 
@@ -601,6 +539,7 @@ The following example sets the default value of a field variable:
 			}
 		}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -630,6 +569,7 @@ The following example shows the equivalent but on a property setter method:
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -640,8 +580,7 @@ The following example shows the equivalent but on a property setter method:
 	}
 ----
 
-Autowired methods and constructors can also use the `@Value` annotation, as the following
-examples show:
+Autowired methods and constructors can also use the `@Value` annotation, as the following examples show:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -661,6 +600,7 @@ examples show:
 		// ...
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -698,6 +638,7 @@ examples show:
 		// ...
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -707,14 +648,11 @@ examples show:
 	}
 ----
 
-
-
-
 [[expressions-language-ref]]
 == Language Reference
 
-This section describes how the Spring Expression Language works. It covers the following
-topics:
+This section describes how the Spring Expression Language works.
+It covers the following topics:
 
 * <<expressions-ref-literal>>
 * <<expressions-properties-arrays>>
@@ -732,18 +670,15 @@ topics:
 * <<expressions-operator-elvis>>
 * <<expressions-operator-safe-navigation>>
 
-
-
 [[expressions-ref-literal]]
 === Literal Expressions
 
-The types of literal expressions supported are strings, numeric values (int, real, hex),
-boolean, and null. Strings are delimited by single quotation marks. To put a single quotation mark itself
-in a string, use two single quotation mark characters.
+The types of literal expressions supported are strings, numeric values (int, real, hex), boolean, and null.
+Strings are delimited by single quotation marks.
+To put a single quotation mark itself in a string, use two single quotation mark characters.
 
-The following listing shows simple usage of literals. Typically, they are not used
-in isolation like this but, rather, as part of a more complex expression -- for example,
-using a literal on one side of a logical comparison operator.
+The following listing shows simple usage of literals.
+Typically, they are not used in isolation like this but, rather, as part of a more complex expression -- for example, using a literal on one side of a logical comparison operator.
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -762,6 +697,7 @@ using a literal on one side of a logical comparison operator.
 
 	Object nullValue = parser.parseExpression("null").getValue();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -783,16 +719,13 @@ using a literal on one side of a logical comparison operator.
 Numbers support the use of the negative sign, exponential notation, and decimal points.
 By default, real numbers are parsed by using Double.parseDouble().
 
-
-
 [[expressions-properties-arrays]]
 === Properties, Arrays, Lists, Maps, and Indexers
 
-Navigating with property references is easy. To do so, use a period to indicate a nested
-property value. The instances of the `Inventor` class, `pupin` and `tesla`, were populated with
-data listed in the <<expressions-example-classes, Classes used in the examples>> section.
-To navigate "`down`" and get Tesla's year of birth and Pupin's city of birth, we use the following
-expressions:
+Navigating with property references is easy.
+To do so, use a period to indicate a nested property value.
+The instances of the `Inventor` class, `pupin` and `tesla`, were populated with data listed in the <<expressions-example-classes, Classes used in the examples>> section.
+To navigate "`down`" and get Tesla's year of birth and Pupin's city of birth, we use the following expressions:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -802,6 +735,7 @@ expressions:
 
 	String city = (String) parser.parseExpression("placeOfBirth.City").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -811,9 +745,8 @@ expressions:
 	val city = parser.parseExpression("placeOfBirth.City").getValue(context) as String
 ----
 
-Case insensitivity is allowed for the first letter of property names. The contents of
-arrays and lists are obtained by using square bracket notation, as the following example
-shows:
+Case insensitivity is allowed for the first letter of property names.
+The contents of arrays and lists are obtained by using square bracket notation, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -838,6 +771,7 @@ shows:
 	String invention = parser.parseExpression("Members[0].Inventions[6]").getValue(
 			context, ieee, String.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -862,9 +796,8 @@ shows:
 			context, ieee, String::class.java)
 ----
 
-The contents of maps are obtained by specifying the literal key value within the
-brackets. In the following example, because keys for the `Officers` map are strings, we can specify
-string literals:
+The contents of maps are obtained by specifying the literal key value within the brackets.
+In the following example, because keys for the `Officers` map are strings, we can specify string literals:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -882,6 +815,7 @@ string literals:
 	parser.parseExpression("Officers['advisors'][0].PlaceOfBirth.Country").setValue(
 			societyContext, "Croatia");
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -899,8 +833,6 @@ string literals:
 			societyContext, "Croatia")
 ----
 
-
-
 [[expressions-inline-lists]]
 === Inline Lists
 
@@ -914,6 +846,7 @@ You can directly express lists in an expression by using `{}` notation.
 
 	List listOfLists = (List) parser.parseExpression("{{'a','b'},{'x','y'}}").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -923,17 +856,14 @@ You can directly express lists in an expression by using `{}` notation.
 	val listOfLists = parser.parseExpression("{{'a','b'},{'x','y'}}").getValue(context) as List<*>
 ----
 
-`{}` by itself means an empty list. For performance reasons, if the list is itself
-entirely composed of fixed literals,  a constant list is created to represent the
-expression (rather than building a new list on each evaluation).
-
-
+`{}` by itself means an empty list.
+For performance reasons, if the list is itself entirely composed of fixed literals, a constant list is created to represent the expression (rather than building a new list on each evaluation).
 
 [[expressions-inline-maps]]
 === Inline Maps
 
-You can also directly express maps in an expression by using `{key:value}` notation. The
-following example shows how to do so:
+You can also directly express maps in an expression by using `{key:value}` notation.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -943,6 +873,7 @@ following example shows how to do so:
 
 	Map mapOfMaps = (Map) parser.parseExpression("{name:{first:'Nikola',last:'Tesla'},dob:{day:10,month:'July',year:1856}}").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -952,18 +883,16 @@ following example shows how to do so:
 	val mapOfMaps = parser.parseExpression("{name:{first:'Nikola',last:'Tesla'},dob:{day:10,month:'July',year:1856}}").getValue(context) as Map<*, *>	
 ----
 
-`{:}` by itself means an empty map. For performance reasons, if the map is itself composed
-of fixed literals or other nested constant structures (lists or maps), a constant map is created
-to represent the expression (rather than building a new map on each evaluation). Quoting of the map keys
-is optional. The examples above do not use quoted keys.
-
-
+`{:}` by itself means an empty map.
+For performance reasons, if the map is itself composed of fixed literals or other nested constant structures (lists or maps), a constant map is created to represent the expression (rather than building a new map on each evaluation).
+Quoting of the map keys is optional.
+The examples above do not use quoted keys.
 
 [[expressions-array-construction]]
 === Array Construction
 
-You can build arrays by using the familiar Java syntax, optionally supplying an initializer
-to have the array populated at construction time. The following example shows how to do so:
+You can build arrays by using the familiar Java syntax, optionally supplying an initializer to have the array populated at construction time.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -976,6 +905,7 @@ to have the array populated at construction time. The following example shows ho
 	// Multi dimensional array
 	int[][] numbers3 = (int[][]) parser.parseExpression("new int[4][5]").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -988,17 +918,15 @@ to have the array populated at construction time. The following example shows ho
 	val numbers3 = parser.parseExpression("new int[4][5]").getValue(context) as Array<IntArray>
 ----
 
-You cannot currently supply an initializer when you construct
-multi-dimensional array.
-
-
+You cannot currently supply an initializer when you construct multi-dimensional array.
 
 [[expressions-methods]]
 === Methods
 
-You can invoke methods by using typical Java programming syntax. You can also invoke methods
-on literals. Variable arguments are also supported. The following examples show how to
-invoke methods:
+You can invoke methods by using typical Java programming syntax.
+You can also invoke methods on literals.
+Variable arguments are also supported.
+The following examples show how to invoke methods:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1010,6 +938,7 @@ invoke methods:
 	boolean isMember = parser.parseExpression("isMember('Mihajlo Pupin')").getValue(
 			societyContext, Boolean.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1021,7 +950,6 @@ invoke methods:
 			societyContext, Boolean::class.java)
 ----
 
-
 [[expressions-operators]]
 === Operators
 
@@ -1032,13 +960,11 @@ The Spring Expression Language supports the following kinds of operators:
 * <<expressions-operators-mathematical>>
 * <<expressions-assignment>>
 
-
 [[expressions-operators-relational]]
 ==== Relational Operators
 
-The relational operators (equal, not equal, less than, less than or equal, greater than,
-and greater than or equal) are supported by using standard operator notation. The
-following listing shows a few examples of operators:
+The relational operators (equal, not equal, less than, less than or equal, greater than, and greater than or equal) are supported by using standard operator notation.
+The following listing shows a few examples of operators:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1052,6 +978,7 @@ following listing shows a few examples of operators:
 	// evaluates to true
 	boolean trueValue = parser.parseExpression("'black' < 'block'").getValue(Boolean.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1067,17 +994,14 @@ following listing shows a few examples of operators:
 
 [NOTE]
 ====
-Greater-than and less-than comparisons against `null` follow a simple rule: `null` is treated as
-nothing (that is NOT as zero). As a consequence, any other value is always greater
-than `null` (`X > null` is always `true`) and no other value is ever less than nothing
-(`X < null` is always `false`).
+Greater-than and less-than comparisons against `null` follow a simple rule: `null` is treated as nothing (that is NOT as zero).
+As a consequence, any other value is always greater than `null` (`X > null` is always `true`) and no other value is ever less than nothing (`X < null` is always `false`).
 
-If you prefer numeric comparisons instead, avoid number-based `null` comparisons
-in favor of comparisons against zero (for example, `X > 0` or `X < 0`).
+If you prefer numeric comparisons instead, avoid number-based `null` comparisons in favor of comparisons against zero (for example, `X > 0` or `X < 0`).
 ====
 
-In addition to the standard relational operators, SpEL supports the `instanceof` and regular
-expression-based `matches` operator. The following listing shows examples of both:
+In addition to the standard relational operators, SpEL supports the `instanceof` and regular expression-based `matches` operator.
+The following listing shows examples of both:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1094,6 +1018,7 @@ expression-based `matches` operator. The following listing shows examples of bot
 	boolean falseValue = parser.parseExpression(
 			"'5.0067' matches '^-?\\d+(\\.\\d{2})?$'").getValue(Boolean.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1110,13 +1035,12 @@ expression-based `matches` operator. The following listing shows examples of bot
 			"'5.0067' matches '^-?\\d+(\\.\\d{2})?$'").getValue(Boolean::class.java)
 ----
 
-CAUTION: Be careful with primitive types, as they are immediately boxed up to the wrapper type,
-so `1 instanceof T(int)` evaluates to `false` while `1 instanceof T(Integer)`
+CAUTION: Be careful with primitive types, as they are immediately boxed up to the wrapper type, so `1 instanceof T(int)` evaluates to `false` while `1 instanceof T(Integer)`
 evaluates to `true`, as expected.
 
-Each symbolic operator can also be specified as a purely alphabetic equivalent. This
-avoids problems where the symbols used have special meaning for the document type in
-which the expression is embedded (such as in an XML document). The textual equivalents are:
+Each symbolic operator can also be specified as a purely alphabetic equivalent.
+This avoids problems where the symbols used have special meaning for the document type in which the expression is embedded (such as in an XML document).
+The textual equivalents are:
 
 * `lt` (`<`)
 * `gt` (`>`)
@@ -1129,7 +1053,6 @@ which the expression is embedded (such as in an XML document). The textual equiv
 * `not` (`!`).
 
 All of the textual operators are case-insensitive.
-
 
 [[expressions-operators-logical]]
 ==== Logical Operators
@@ -1172,6 +1095,7 @@ The following example shows how to use the logical operators
 	String expression = "isMember('Nikola Tesla') and !isMember('Mihajlo Pupin')";
 	boolean falseValue = parser.parseExpression(expression).getValue(societyContext, Boolean.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1203,14 +1127,14 @@ The following example shows how to use the logical operators
 	val falseValue = parser.parseExpression(expression).getValue(societyContext, Boolean::class.java)
 ----
 
-
 [[expressions-operators-mathematical]]
 ==== Mathematical Operators
 
-You can use the addition operator on both numbers and strings. You can use the subtraction, multiplication,
-and division operators only on numbers. You can also use
-the modulus (%) and exponential power (^) operators. Standard operator precedence is enforced. The
-following example shows the mathematical operators in use:
+You can use the addition operator on both numbers and strings.
+You can use the subtraction, multiplication, and division operators only on numbers.
+You can also use the modulus (%) and exponential power (^) operators.
+Standard operator precedence is enforced.
+The following example shows the mathematical operators in use:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1244,6 +1168,7 @@ following example shows the mathematical operators in use:
 	// Operator precedence
 	int minusTwentyOne = parser.parseExpression("1+2-3*8").getValue(Integer.class);  // -21
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1277,13 +1202,12 @@ following example shows the mathematical operators in use:
 	val minusTwentyOne = parser.parseExpression("1+2-3*8").getValue(Int::class.java)  // -21	
 ----
 
-
 [[expressions-assignment]]
 ==== The Assignment Operator
 
-To setting a property, use the assignment operator (`=`). This is typically
-done within a call to `setValue` but can also be done inside a call to `getValue`. The
-following listing shows both ways to use the assignment operator:
+To setting a property, use the assignment operator (`=`).
+This is typically done within a call to `setValue` but can also be done inside a call to `getValue`.
+The following listing shows both ways to use the assignment operator:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1297,6 +1221,7 @@ following listing shows both ways to use the assignment operator:
 	String aleks = parser.parseExpression(
 			"Name = 'Aleksandar Seovic'").getValue(context, inventor, String.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1310,17 +1235,17 @@ following listing shows both ways to use the assignment operator:
 			"Name = 'Aleksandar Seovic'").getValue(context, inventor, String::class.java)
 ----
 
-
 [[expressions-types]]
 === Types
 
-You can use the special `T` operator to specify an instance of `java.lang.Class` (the
-type). Static methods are invoked by using this operator as well. The
+You can use the special `T` operator to specify an instance of `java.lang.Class` (the type).
+Static methods are invoked by using this operator as well.
+The
 `StandardEvaluationContext` uses a `TypeLocator` to find types, and the
 `StandardTypeLocator` (which can be replaced) is built with an understanding of the
-`java.lang` package. This means that `T()` references to types within `java.lang` do not need to be
-fully qualified, but all other type references must be. The following example shows how
-to use the `T` operator:
+`java.lang` package.
+This means that `T()` references to types within `java.lang` do not need to be fully qualified, but all other type references must be.
+The following example shows how to use the `T` operator:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1333,6 +1258,7 @@ to use the `T` operator:
 			"T(java.math.RoundingMode).CEILING < T(java.math.RoundingMode).FLOOR")
 			.getValue(Boolean.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1345,14 +1271,12 @@ to use the `T` operator:
 			.getValue(Boolean::class.java)
 ----
 
-
-
 [[expressions-constructors]]
 === Constructors
 
-You can invoke constructors by using the `new` operator. You should use the fully qualified class name
-for all but the primitive types (`int`, `float`, and so on) and String. The following
-example shows how to use the `new` operator to invoke constructors:
+You can invoke constructors by using the `new` operator.
+You should use the fully qualified class name for all but the primitive types (`int`, `float`, and so on) and String.
+The following example shows how to use the `new` operator to invoke constructors:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1366,6 +1290,7 @@ example shows how to use the `new` operator to invoke constructors:
 			"Members.add(new org.spring.samples.spel.inventor.Inventor(
 				'Albert Einstein', 'German'))").getValue(societyContext);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1379,18 +1304,15 @@ example shows how to use the `new` operator to invoke constructors:
 			.getValue(societyContext)
 ----
 
-
-
 [[expressions-ref-variables]]
 === Variables
 
-You can reference variables in the expression by using the `#variableName` syntax. Variables
-are set by using the `setVariable` method on `EvaluationContext` implementations.
+You can reference variables in the expression by using the `#variableName` syntax.
+Variables are set by using the `setVariable` method on `EvaluationContext` implementations.
 
 [NOTE]
 ====
-Valid variable names must be composed of one or more of the following supported
-characters.
+Valid variable names must be composed of one or more of the following supported characters.
 
 * letters: `A` to `Z` and `a` to `z`
 * digits: `0` to `9`
@@ -1411,6 +1333,7 @@ The following example shows how to use variables.
 	parser.parseExpression("Name = #newName").getValue(context, tesla);
 	System.out.println(tesla.getName())  // "Mike Tesla"
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1423,15 +1346,13 @@ The following example shows how to use variables.
 	println(tesla.name)  // "Mike Tesla"
 ----
 
-
 [[expressions-this-root]]
 ==== The `#this` and `#root` Variables
 
-The `#this` variable is always defined and refers to the current evaluation object
-(against which unqualified references are resolved). The `#root` variable is always
-defined and refers to the root context object. Although `#this` may vary as components of
-an expression are evaluated, `#root` always refers to the root. The following examples
-show how to use the `#this` and `#root` variables:
+The `#this` variable is always defined and refers to the current evaluation object (against which unqualified references are resolved).
+The `#root` variable is always defined and refers to the root context object.
+Although `#this` may vary as components of an expression are evaluated, `#root` always refers to the root.
+The following examples show how to use the `#this` and `#root` variables:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1450,6 +1371,7 @@ show how to use the `#this` and `#root` variables:
 	List<Integer> primesGreaterThanTen = (List<Integer>) parser.parseExpression(
 			"#primes.?[#this>10]").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1468,14 +1390,12 @@ show how to use the `#this` and `#root` variables:
 			"#primes.?[#this>10]").getValue(context) as List<Int>
 ----
 
-
-
 [[expressions-ref-functions]]
 === Functions
 
-You can extend SpEL by registering user-defined functions that can be called within the
-expression string. The function is registered through the `EvaluationContext`. The
-following example shows how to register a user-defined function:
+You can extend SpEL by registering user-defined functions that can be called within the expression string.
+The function is registered through the `EvaluationContext`.
+The following example shows how to register a user-defined function:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1485,6 +1405,7 @@ following example shows how to register a user-defined function:
 	EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
 	context.setVariable("myFunction", method);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1510,6 +1431,7 @@ For example, consider the following utility method that reverses a string:
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1536,6 +1458,7 @@ You can then register and use the preceding method, as the following example sho
 	String helloWorldReversed = parser.parseExpression(
 			"#reverseString('hello')").getValue(context, String.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1548,14 +1471,11 @@ You can then register and use the preceding method, as the following example sho
 			"#reverseString('hello')").getValue(context, String::class.java)
 ----
 
-
-
 [[expressions-bean-references]]
 === Bean References
 
-If the evaluation context has been configured with a bean resolver, you can
-look up beans from an expression by using the `@` symbol. The following example shows how
-to do so:
+If the evaluation context has been configured with a bean resolver, you can look up beans from an expression by using the `@` symbol.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1567,6 +1487,7 @@ to do so:
 	// This will end up calling resolve(context,"something") on MyBeanResolver during evaluation
 	Object bean = parser.parseExpression("@something").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1591,6 +1512,7 @@ The following example shows how to do so:
 	// This will end up calling resolve(context,"&foo") on MyBeanResolver during evaluation
 	Object bean = parser.parseExpression("&foo").getValue(context);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1602,12 +1524,11 @@ The following example shows how to do so:
 	val bean = parser.parseExpression("&foo").getValue(context)
 ----
 
-
 [[expressions-operator-ternary]]
 === Ternary Operator (If-Then-Else)
 
-You can use the ternary operator for performing if-then-else conditional logic inside
-the expression. The following listing shows a minimal example:
+You can use the ternary operator for performing if-then-else conditional logic inside the expression.
+The following listing shows a minimal example:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1615,6 +1536,7 @@ the expression. The following listing shows a minimal example:
 	String falseString = parser.parseExpression(
 			"false ? 'trueExp' : 'falseExp'").getValue(String.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1622,8 +1544,8 @@ the expression. The following listing shows a minimal example:
 			"false ? 'trueExp' : 'falseExp'").getValue(String::class.java)
 ----
 
-In this case, the boolean `false` results in returning the string value `'falseExp'`. A more
-realistic example follows:
+In this case, the boolean `false` results in returning the string value `'falseExp'`.
+A more realistic example follows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1638,6 +1560,7 @@ realistic example follows:
 			.getValue(societyContext, String.class);
 	// queryResultString = "Nikola Tesla is a member of the IEEE Society"
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1651,18 +1574,14 @@ realistic example follows:
 	// queryResultString = "Nikola Tesla is a member of the IEEE Society"
 ----
 
-See the next section on the Elvis operator for an even shorter syntax for the
-ternary operator.
-
-
+See the next section on the Elvis operator for an even shorter syntax for the ternary operator.
 
 [[expressions-operator-elvis]]
 === The Elvis Operator
 
 The Elvis operator is a shortening of the ternary operator syntax and is used in the
 http://www.groovy-lang.org/operators.html#_elvis_operator[Groovy] language.
-With the ternary operator syntax, you usually have to repeat a variable twice, as the
-following example shows:
+With the ternary operator syntax, you usually have to repeat a variable twice, as the following example shows:
 
 [source,groovy,indent=0,subs="verbatim,quotes"]
 ----
@@ -1681,6 +1600,7 @@ The following example shows how to use the Elvis operator:
 	String name = parser.parseExpression("name?:'Unknown'").getValue(new Inventor(), String.class);
 	System.out.println(name);  // 'Unknown'
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1706,6 +1626,7 @@ The following listing shows a more complex example:
 	name = parser.parseExpression("Name?:'Elvis Presley'").getValue(context, tesla, String.class);
 	System.out.println(name);  // Elvis Presley
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1732,18 +1653,18 @@ example shows how to use the Elvis operator in a `@Value` expression:
 ----
 
 This will inject a system property `pop3.port` if it is defined or 25 if not.
+
 =====
 
 
 [[expressions-operator-safe-navigation]]
 === Safe Navigation Operator
 
-The safe navigation operator is used to avoid a `NullPointerException` and comes from
-the http://www.groovy-lang.org/operators.html#_safe_navigation_operator[Groovy]
-language. Typically, when you have a reference to an object, you might need to verify that
-it is not null before accessing methods or properties of the object. To avoid this, the
-safe navigation operator returns null instead of throwing an exception. The following
-example shows how to use the safe navigation operator:
+The safe navigation operator is used to avoid a `NullPointerException` and comes from the http://www.groovy-lang.org/operators.html#_safe_navigation_operator[Groovy]
+language.
+Typically, when you have a reference to an object, you might need to verify that it is not null before accessing methods or properties of the object.
+To avoid this, the safe navigation operator returns null instead of throwing an exception.
+The following example shows how to use the safe navigation operator:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1761,6 +1682,7 @@ example shows how to use the safe navigation operator:
 	city = parser.parseExpression("PlaceOfBirth?.City").getValue(context, tesla, String.class);
 	System.out.println(city);  // null - does not throw NullPointerException!!!
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1778,17 +1700,14 @@ example shows how to use the safe navigation operator:
 	println(city)  // null - does not throw NullPointerException!!!
 ----
 
-
-
 [[expressions-collection-selection]]
 === Collection Selection
 
-Selection is a powerful expression language feature that lets you transform a
-source collection into another collection by selecting from its entries.
+Selection is a powerful expression language feature that lets you transform a source collection into another collection by selecting from its entries.
 
-Selection uses a syntax of `.?[selectionExpression]`. It filters the collection and
-returns a new collection that contain a subset of the original elements. For example,
-selection lets us easily get a list of Serbian inventors, as the following example shows:
+Selection uses a syntax of `.?[selectionExpression]`.
+It filters the collection and returns a new collection that contain a subset of the original elements.
+For example, selection lets us easily get a list of Serbian inventors, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1796,6 +1715,7 @@ selection lets us easily get a list of Serbian inventors, as the following examp
 	List<Inventor> list = (List<Inventor>) parser.parseExpression(
 			"Members.?[Nationality == 'Serbian']").getValue(societyContext);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1803,42 +1723,40 @@ selection lets us easily get a list of Serbian inventors, as the following examp
 			"Members.?[Nationality == 'Serbian']").getValue(societyContext) as List<Inventor>
 ----
 
-Selection is possible upon both lists and maps. For a list, the selection
-criteria is evaluated against each individual list element. Against a map, the
-selection criteria is evaluated against each map entry (objects of the Java type
-`Map.Entry`). Each map entry has its key and value accessible as properties for use in
-the selection.
+Selection is possible upon both lists and maps.
+For a list, the selection criteria is evaluated against each individual list element.
+Against a map, the selection criteria is evaluated against each map entry (objects of the Java type
+`Map.Entry`).
+Each map entry has its key and value accessible as properties for use in the selection.
 
-The following expression returns a new map that consists of those elements of the original map
-where the entry value is less than 27:
+The following expression returns a new map that consists of those elements of the original map where the entry value is less than 27:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
 ----
 	Map newMap = parser.parseExpression("map.?[value<27]").getValue();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
 	val newMap = parser.parseExpression("map.?[value<27]").getValue()
 ----
 
-
-In addition to returning all the selected elements, you can retrieve only the
-first or the last value. To obtain the first entry matching the selection, the syntax is
-`.^[selectionExpression]`. To obtain the last matching selection, the syntax is
+In addition to returning all the selected elements, you can retrieve only the first or the last value.
+To obtain the first entry matching the selection, the syntax is
+`.^[selectionExpression]`.
+To obtain the last matching selection, the syntax is
 `.$[selectionExpression]`.
-
-
 
 [[expressions-collection-projection]]
 === Collection Projection
 
-Projection lets a collection drive the evaluation of a sub-expression, and the
-result is a new collection. The syntax for projection is `.![projectionExpression]`. For
-example, suppose we have a list of inventors but want the list of
-cities where they were born. Effectively, we want to evaluate 'placeOfBirth.city' for
-every entry in the inventor list. The following example uses projection to do so:
+Projection lets a collection drive the evaluation of a sub-expression, and the result is a new collection.
+The syntax for projection is `.![projectionExpression]`.
+For example, suppose we have a list of inventors but want the list of cities where they were born.
+Effectively, we want to evaluate 'placeOfBirth.city' for every entry in the inventor list.
+The following example uses projection to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1846,6 +1764,7 @@ every entry in the inventor list. The following example uses projection to do so
 	// returns ['Smiljan', 'Idvor' ]
 	List placesOfBirth = (List)parser.parseExpression("Members.![placeOfBirth.city]");
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1853,20 +1772,15 @@ every entry in the inventor list. The following example uses projection to do so
 	val placesOfBirth = parser.parseExpression("Members.![placeOfBirth.city]") as List<*>
 ----
 
-You can also use a map to drive projection and, in this case, the projection expression is
-evaluated against each entry in the map (represented as a Java `Map.Entry`). The result
-of a projection across a map is a list that consists of the evaluation of the projection
-expression against each map entry.
-
-
+You can also use a map to drive projection and, in this case, the projection expression is evaluated against each entry in the map (represented as a Java `Map.Entry`).
+The result of a projection across a map is a list that consists of the evaluation of the projection expression against each map entry.
 
 [[expressions-templating]]
 === Expression templating
 
 Expression templates allow mixing literal text with one or more evaluation blocks.
-Each evaluation block is delimited with prefix and suffix characters that you can
-define. A common choice is to use `#{ }` as the delimiters, as the following example
-shows:
+Each evaluation block is delimited with prefix and suffix characters that you can define.
+A common choice is to use `#{ }` as the delimiters, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -1877,6 +1791,7 @@ shows:
 
 	// evaluates to "random number is 0.7038186818312008"
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1887,11 +1802,9 @@ shows:
 	// evaluates to "random number is 0.7038186818312008"
 ----
 
-The string is evaluated by concatenating the literal text `'random number is '` with the
-result of evaluating the expression inside the `#{ }` delimiter (in this case, the result
-of calling that `random()` method). The second argument to the `parseExpression()` method
-is of the type `ParserContext`. The `ParserContext` interface is used to influence how
-the expression is parsed in order to support the expression templating functionality.
+The string is evaluated by concatenating the literal text `'random number is '` with the result of evaluating the expression inside the `#{ }` delimiter (in this case, the result of calling that `random()` method).
+The second argument to the `parseExpression()` method is of the type `ParserContext`.
+The `ParserContext` interface is used to influence how the expression is parsed in order to support the expression templating functionality.
 The definition of `TemplateParserContext` follows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
@@ -1912,6 +1825,7 @@ The definition of `TemplateParserContext` follows:
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -1930,7 +1844,6 @@ The definition of `TemplateParserContext` follows:
 		}
 	}
 ----
-
 
 [[expressions-example-classes]]
 == Classes Used in the Examples
@@ -2010,6 +1923,7 @@ This section lists the classes used in the examples throughout this chapter.
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Inventor.kt
 ----
@@ -2057,6 +1971,7 @@ class Inventor(
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .PlaceOfBirth.kt
 ----
@@ -2106,6 +2021,7 @@ class Inventor(
 		}
 	}
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Society.kt
 ----

@@ -17,7 +17,6 @@
 package org.springframework.test.context.junit4.aci.annotation;
 
 import org.junit.Test;
-
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.aci.DevProfileInitializer;
@@ -35,11 +34,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(initializers = DevProfileInitializer.class)
 public class MergedInitializersAnnotationConfigTests extends SingleInitializerAnnotationConfigTests {
 
-	@Override
-	@Test
-	public void activeBeans() {
-		assertThat(foo).isEqualTo("foo");
-		assertThat(bar).isEqualTo("foo");
-		assertThat(baz).isEqualTo("dev profile config");
-	}
+    @Override
+    @Test
+    public void activeBeans() {
+        assertThat(foo).isEqualTo("foo");
+        assertThat(bar).isEqualTo("foo");
+        assertThat(baz).isEqualTo("dev profile config");
+    }
 }

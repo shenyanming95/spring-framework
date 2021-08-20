@@ -16,10 +16,7 @@
 
 package org.springframework.test.web.reactive.server.samples;
 
-import java.nio.charset.StandardCharsets;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -28,6 +25,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,52 +38,52 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ErrorTests {
 
-	private final WebTestClient client = WebTestClient.bindToController(new TestController()).build();
+    private final WebTestClient client = WebTestClient.bindToController(new TestController()).build();
 
 
-	@Test
-	public void notFound(){
-		this.client.get().uri("/invalid")
-				.exchange()
-				.expectStatus().isNotFound()
-				.expectBody(Void.class);
-	}
+    @Test
+    public void notFound() {
+        this.client.get().uri("/invalid")
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(Void.class);
+    }
 
-	@Test
-	public void serverException() {
-		this.client.get().uri("/server-error")
-				.exchange()
-				.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-				.expectBody(Void.class);
-	}
+    @Test
+    public void serverException() {
+        this.client.get().uri("/server-error")
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+                .expectBody(Void.class);
+    }
 
-	@Test // SPR-17363
-	public void badRequestBeforeRequestBodyConsumed() {
-		EntityExchangeResult<Void> result = this.client.post()
-				.uri("/post")
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(new Person("Dan"))
-				.exchange()
-				.expectStatus().isBadRequest()
-				.expectBody().isEmpty();
+    @Test // SPR-17363
+    public void badRequestBeforeRequestBodyConsumed() {
+        EntityExchangeResult<Void> result = this.client.post()
+                .uri("/post")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new Person("Dan"))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody().isEmpty();
 
-		byte[] content = result.getRequestBodyContent();
-		assertThat(content).isNotNull();
-		assertThat(new String(content, StandardCharsets.UTF_8)).isEqualTo("{\"name\":\"Dan\"}");
-	}
+        byte[] content = result.getRequestBodyContent();
+        assertThat(content).isNotNull();
+        assertThat(new String(content, StandardCharsets.UTF_8)).isEqualTo("{\"name\":\"Dan\"}");
+    }
 
 
-	@RestController
-	static class TestController {
+    @RestController
+    static class TestController {
 
-		@GetMapping("/server-error")
-		void handleAndThrowException() {
-			throw new IllegalStateException("server error");
-		}
+        @GetMapping("/server-error")
+        void handleAndThrowException() {
+            throw new IllegalStateException("server error");
+        }
 
-		@PostMapping(path = "/post", params = "p")
-		void handlePost(@RequestBody Person person) {
-		}
-	}
+        @PostMapping(path = "/post", params = "p")
+        void handlePost(@RequestBody Person person) {
+        }
+    }
 
 }

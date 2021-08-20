@@ -16,10 +16,9 @@
 
 package org.springframework.test.context.testng.transaction.ejb;
 
-import org.testng.annotations.Test;
-
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.testng.annotations.Test;
 
 /**
  * Extension of {@link CommitForRequiresNewEjbTxDaoTestNGTests} which sets the default
@@ -40,6 +39,6 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 @Rollback
 public class RollbackForRequiresNewEjbTxDaoTestNGTests extends CommitForRequiresNewEjbTxDaoTestNGTests {
 
-	/* test methods in superclass */
+    /* test methods in superclass */
 
 }

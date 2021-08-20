@@ -30,9 +30,9 @@ package org.springframework.messaging.rsocket;
 @Deprecated
 public interface ClientRSocketFactoryConfigurer {
 
-	/**
-	 * Apply configuration to the given {@code ClientRSocketFactory}.
-	 */
-	void configure(io.rsocket.RSocketFactory.ClientRSocketFactory rsocketFactory);
+    /**
+     * Apply configuration to the given {@code ClientRSocketFactory}.
+     */
+    void configure(io.rsocket.RSocketFactory.ClientRSocketFactory rsocketFactory);
 
 }

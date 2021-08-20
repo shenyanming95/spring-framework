@@ -29,26 +29,25 @@ import javax.management.MBeanServerFactory;
  */
 public class MBeanTestUtils {
 
-	/**
-	 * Resets MBeanServerFactory and ManagementFactory to a known consistent state.
-	 * <p>This involves releasing all currently registered MBeanServers and resetting
-	 * the platformMBeanServer to null.
-	 */
-	public static synchronized void resetMBeanServers() throws Exception {
-		for (MBeanServer server : MBeanServerFactory.findMBeanServer(null)) {
-			try {
-				MBeanServerFactory.releaseMBeanServer(server);
-			}
-			catch (IllegalArgumentException ex) {
-				if (!ex.getMessage().contains("not in list")) {
-					throw ex;
-				}
-			}
-		}
+    /**
+     * Resets MBeanServerFactory and ManagementFactory to a known consistent state.
+     * <p>This involves releasing all currently registered MBeanServers and resetting
+     * the platformMBeanServer to null.
+     */
+    public static synchronized void resetMBeanServers() throws Exception {
+        for (MBeanServer server : MBeanServerFactory.findMBeanServer(null)) {
+            try {
+                MBeanServerFactory.releaseMBeanServer(server);
+            } catch (IllegalArgumentException ex) {
+                if (!ex.getMessage().contains("not in list")) {
+                    throw ex;
+                }
+            }
+        }
 
-		Field field = ManagementFactory.class.getDeclaredField("platformMBeanServer");
-		field.setAccessible(true);
-		field.set(null, null);
-	}
+        Field field = ManagementFactory.class.getDeclaredField("platformMBeanServer");
+        field.setAccessible(true);
+        field.set(null, null);
+    }
 
 }

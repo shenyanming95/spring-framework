@@ -17,7 +17,6 @@
 package org.springframework.aop.config;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
@@ -32,13 +31,13 @@ import static org.springframework.core.testfixture.io.ResourceTestUtils.qualifie
  */
 public class TopLevelAopTagTests {
 
-	@Test
-	public void testParse() {
-		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-		new XmlBeanDefinitionReader(beanFactory).loadBeanDefinitions(
-				qualifiedResource(TopLevelAopTagTests.class, "context.xml"));
+    @Test
+    public void testParse() {
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        new XmlBeanDefinitionReader(beanFactory).loadBeanDefinitions(
+                qualifiedResource(TopLevelAopTagTests.class, "context.xml"));
 
-		assertThat(beanFactory.containsBeanDefinition("testPointcut")).isTrue();
-	}
+        assertThat(beanFactory.containsBeanDefinition("testPointcut")).isTrue();
+    }
 
 }

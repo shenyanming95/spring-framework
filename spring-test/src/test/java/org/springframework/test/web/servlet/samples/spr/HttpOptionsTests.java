@@ -16,12 +16,9 @@
 
 package org.springframework.test.web.servlet.samples.spr;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +33,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -52,48 +51,48 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @ContextConfiguration
 public class HttpOptionsTests {
 
-	@Autowired
-	private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
-	private MockMvc mockMvc;
-
-
-	@BeforeEach
-	public void setup() {
-		this.mockMvc = webAppContextSetup(this.wac).dispatchOptions(true).build();
-	}
-
-	@Test
-	public void test() throws Exception {
-		MyController controller = this.wac.getBean(MyController.class);
-		int initialCount = controller.counter.get();
-		this.mockMvc.perform(options("/myUrl")).andExpect(status().isOk());
-
-		assertThat(controller.counter.get()).isEqualTo((initialCount + 1));
-	}
+    private MockMvc mockMvc;
 
 
-	@Configuration
-	@EnableWebMvc
-	static class WebConfig implements WebMvcConfigurer {
+    @BeforeEach
+    public void setup() {
+        this.mockMvc = webAppContextSetup(this.wac).dispatchOptions(true).build();
+    }
 
-		@Bean
-		public MyController myController() {
-			return new MyController();
-		}
-	}
+    @Test
+    public void test() throws Exception {
+        MyController controller = this.wac.getBean(MyController.class);
+        int initialCount = controller.counter.get();
+        this.mockMvc.perform(options("/myUrl")).andExpect(status().isOk());
 
-	@Controller
-	private static class MyController {
-
-		private AtomicInteger counter = new AtomicInteger(0);
+        assertThat(controller.counter.get()).isEqualTo((initialCount + 1));
+    }
 
 
-		@RequestMapping(value = "/myUrl", method = RequestMethod.OPTIONS)
-		@ResponseBody
-		public void handle() {
-			counter.incrementAndGet();
-		}
-	}
+    @Configuration
+    @EnableWebMvc
+    static class WebConfig implements WebMvcConfigurer {
+
+        @Bean
+        public MyController myController() {
+            return new MyController();
+        }
+    }
+
+    @Controller
+    private static class MyController {
+
+        private AtomicInteger counter = new AtomicInteger(0);
+
+
+        @RequestMapping(value = "/myUrl", method = RequestMethod.OPTIONS)
+        @ResponseBody
+        public void handle() {
+            counter.incrementAndGet();
+        }
+    }
 
 }

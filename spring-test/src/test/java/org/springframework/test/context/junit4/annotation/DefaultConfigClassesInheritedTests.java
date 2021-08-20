@@ -17,7 +17,6 @@
 package org.springframework.test.context.junit4.annotation;
 
 import org.junit.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.testfixture.beans.Pet;
 import org.springframework.context.annotation.Bean;
@@ -39,24 +38,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration
 public class DefaultConfigClassesInheritedTests extends DefaultConfigClassesBaseTests {
 
-	@Configuration
-	static class ContextConfiguration {
+    @Autowired
+    private Pet pet;
 
-		@Bean
-		public Pet pet() {
-			return new Pet("Fido");
-		}
-	}
+    @Test
+    public void verifyPetSetFromExtendedContextConfig() {
+        assertThat(this.pet).as("The pet should have been autowired.").isNotNull();
+        assertThat(this.pet.getName()).isEqualTo("Fido");
+    }
 
+    @Configuration
+    static class ContextConfiguration {
 
-	@Autowired
-	private Pet pet;
-
-
-	@Test
-	public void verifyPetSetFromExtendedContextConfig() {
-		assertThat(this.pet).as("The pet should have been autowired.").isNotNull();
-		assertThat(this.pet.getName()).isEqualTo("Fido");
-	}
+        @Bean
+        public Pet pet() {
+            return new Pet("Fido");
+        }
+    }
 
 }

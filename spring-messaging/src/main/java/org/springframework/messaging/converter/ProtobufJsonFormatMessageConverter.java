@@ -37,35 +37,35 @@ import org.springframework.lang.Nullable;
  */
 public class ProtobufJsonFormatMessageConverter extends ProtobufMessageConverter {
 
-	/**
-	 * Constructor with default instances of {@link com.google.protobuf.util.JsonFormat.Parser
-	 * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
-	 * JsonFormat.Printer}, and {@link ExtensionRegistry}.
-	 */
-	public ProtobufJsonFormatMessageConverter(@Nullable ExtensionRegistry extensionRegistry) {
-		this(null, null);
-	}
+    /**
+     * Constructor with default instances of {@link com.google.protobuf.util.JsonFormat.Parser
+     * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
+     * JsonFormat.Printer}, and {@link ExtensionRegistry}.
+     */
+    public ProtobufJsonFormatMessageConverter(@Nullable ExtensionRegistry extensionRegistry) {
+        this(null, null);
+    }
 
-	/**
-	 * Constructor with given instances of {@link com.google.protobuf.util.JsonFormat.Parser
-	 * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
-	 * JsonFormat.Printer}, and a default instance of {@link ExtensionRegistry}.
-	 */
-	public ProtobufJsonFormatMessageConverter(
-			@Nullable JsonFormat.Parser parser, @Nullable JsonFormat.Printer printer) {
+    /**
+     * Constructor with given instances of {@link com.google.protobuf.util.JsonFormat.Parser
+     * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
+     * JsonFormat.Printer}, and a default instance of {@link ExtensionRegistry}.
+     */
+    public ProtobufJsonFormatMessageConverter(
+            @Nullable JsonFormat.Parser parser, @Nullable JsonFormat.Printer printer) {
 
-		this(parser, printer, null);
-	}
+        this(parser, printer, null);
+    }
 
-	/**
-	 * Constructor with given instances of {@link com.google.protobuf.util.JsonFormat.Parser
-	 * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
-	 * JsonFormat.Printer}, and {@link ExtensionRegistry}.
-	 */
-	public ProtobufJsonFormatMessageConverter(@Nullable JsonFormat.Parser parser,
-			@Nullable JsonFormat.Printer printer, @Nullable ExtensionRegistry extensionRegistry) {
+    /**
+     * Constructor with given instances of {@link com.google.protobuf.util.JsonFormat.Parser
+     * JsonFormat.Parser}, {@link com.google.protobuf.util.JsonFormat.Printer
+     * JsonFormat.Printer}, and {@link ExtensionRegistry}.
+     */
+    public ProtobufJsonFormatMessageConverter(@Nullable JsonFormat.Parser parser,
+                                              @Nullable JsonFormat.Printer printer, @Nullable ExtensionRegistry extensionRegistry) {
 
-		super(new ProtobufJavaUtilSupport(parser, printer), extensionRegistry);
-	}
+        super(new ProtobufJavaUtilSupport(parser, printer), extensionRegistry);
+    }
 
 }

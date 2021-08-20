@@ -19,20 +19,7 @@ package org.springframework.test.context.junit4;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-
-import org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests;
-import org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.BeanOverridingExplicitConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTests;
-import org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderBeanOverridingDefaultConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderBeanOverridingExplicitConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderDefaultConfigClassesBaseTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderDefaultConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderExplicitConfigClassesBaseTests;
-import org.springframework.test.context.junit4.annotation.DefaultLoaderExplicitConfigClassesInheritedTests;
-import org.springframework.test.context.junit4.annotation.ExplicitConfigClassesBaseTests;
-import org.springframework.test.context.junit4.annotation.ExplicitConfigClassesInheritedTests;
+import org.springframework.test.context.junit4.annotation.*;
 import org.springframework.test.context.junit4.orm.HibernateSessionFlushingTests;
 import org.springframework.test.context.junit4.profile.annotation.DefaultProfileAnnotationConfigTests;
 import org.springframework.test.context.junit4.profile.annotation.DevProfileAnnotationConfigTests;
@@ -60,53 +47,53 @@ import org.springframework.test.context.junit4.profile.xml.DevProfileXmlConfigTe
 @RunWith(Suite.class)
 // Note: the following 'multi-line' layout is for enhanced code readability.
 @SuiteClasses({//
-StandardJUnit4FeaturesTests.class,//
-	StandardJUnit4FeaturesSpringRunnerTests.class,//
-	SpringJUnit47ClassRunnerRuleTests.class,//
-	AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.class,//
-	DefaultConfigClassesBaseTests.class,//
-	DefaultConfigClassesInheritedTests.class,//
-	BeanOverridingDefaultConfigClassesInheritedTests.class,//
-	ExplicitConfigClassesBaseTests.class,//
-	ExplicitConfigClassesInheritedTests.class,//
-	BeanOverridingExplicitConfigClassesInheritedTests.class,//
-	DefaultLoaderDefaultConfigClassesBaseTests.class,//
-	DefaultLoaderDefaultConfigClassesInheritedTests.class,//
-	DefaultLoaderBeanOverridingDefaultConfigClassesInheritedTests.class,//
-	DefaultLoaderExplicitConfigClassesBaseTests.class,//
-	DefaultLoaderExplicitConfigClassesInheritedTests.class,//
-	DefaultLoaderBeanOverridingExplicitConfigClassesInheritedTests.class,//
-	DefaultProfileAnnotationConfigTests.class,//
-	DevProfileAnnotationConfigTests.class,//
-	DevProfileResolverAnnotationConfigTests.class,//
-	DefaultProfileXmlConfigTests.class,//
-	DevProfileXmlConfigTests.class,//
-	DevProfileResolverXmlConfigTests.class,//
-	ExpectedExceptionSpringRunnerTests.class,//
-	TimedSpringRunnerTests.class,//
-	RepeatedSpringRunnerTests.class,//
-	EnabledAndIgnoredSpringRunnerTests.class,//
-	HardCodedProfileValueSourceSpringRunnerTests.class,//
-	SpringJUnit4ClassRunnerAppCtxTests.class,//
-	ClassPathResourceSpringJUnit4ClassRunnerAppCtxTests.class,//
-	AbsolutePathSpringJUnit4ClassRunnerAppCtxTests.class,//
-	RelativePathSpringJUnit4ClassRunnerAppCtxTests.class,//
-	MultipleResourcesSpringJUnit4ClassRunnerAppCtxTests.class,//
-	InheritedConfigSpringJUnit4ClassRunnerAppCtxTests.class,//
-	PropertiesBasedSpringJUnit4ClassRunnerAppCtxTests.class,//
-	CustomDefaultContextLoaderClassSpringRunnerTests.class,//
-	ParameterizedDependencyInjectionTests.class,//
-	ConcreteTransactionalJUnit4SpringContextTests.class,//
-	ClassLevelTransactionalSpringRunnerTests.class,//
-	MethodLevelTransactionalSpringRunnerTests.class,//
-	DefaultRollbackTrueRollbackAnnotationTransactionalTests.class,//
-	DefaultRollbackFalseRollbackAnnotationTransactionalTests.class,//
-	RollbackOverrideDefaultRollbackTrueTransactionalTests.class,//
-	RollbackOverrideDefaultRollbackFalseTransactionalTests.class,//
-	BeforeAndAfterTransactionAnnotationTests.class,//
-	TimedTransactionalSpringRunnerTests.class,//
-	HibernateSessionFlushingTests.class //
+        StandardJUnit4FeaturesTests.class,//
+        StandardJUnit4FeaturesSpringRunnerTests.class,//
+        SpringJUnit47ClassRunnerRuleTests.class,//
+        AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.class,//
+        DefaultConfigClassesBaseTests.class,//
+        DefaultConfigClassesInheritedTests.class,//
+        BeanOverridingDefaultConfigClassesInheritedTests.class,//
+        ExplicitConfigClassesBaseTests.class,//
+        ExplicitConfigClassesInheritedTests.class,//
+        BeanOverridingExplicitConfigClassesInheritedTests.class,//
+        DefaultLoaderDefaultConfigClassesBaseTests.class,//
+        DefaultLoaderDefaultConfigClassesInheritedTests.class,//
+        DefaultLoaderBeanOverridingDefaultConfigClassesInheritedTests.class,//
+        DefaultLoaderExplicitConfigClassesBaseTests.class,//
+        DefaultLoaderExplicitConfigClassesInheritedTests.class,//
+        DefaultLoaderBeanOverridingExplicitConfigClassesInheritedTests.class,//
+        DefaultProfileAnnotationConfigTests.class,//
+        DevProfileAnnotationConfigTests.class,//
+        DevProfileResolverAnnotationConfigTests.class,//
+        DefaultProfileXmlConfigTests.class,//
+        DevProfileXmlConfigTests.class,//
+        DevProfileResolverXmlConfigTests.class,//
+        ExpectedExceptionSpringRunnerTests.class,//
+        TimedSpringRunnerTests.class,//
+        RepeatedSpringRunnerTests.class,//
+        EnabledAndIgnoredSpringRunnerTests.class,//
+        HardCodedProfileValueSourceSpringRunnerTests.class,//
+        SpringJUnit4ClassRunnerAppCtxTests.class,//
+        ClassPathResourceSpringJUnit4ClassRunnerAppCtxTests.class,//
+        AbsolutePathSpringJUnit4ClassRunnerAppCtxTests.class,//
+        RelativePathSpringJUnit4ClassRunnerAppCtxTests.class,//
+        MultipleResourcesSpringJUnit4ClassRunnerAppCtxTests.class,//
+        InheritedConfigSpringJUnit4ClassRunnerAppCtxTests.class,//
+        PropertiesBasedSpringJUnit4ClassRunnerAppCtxTests.class,//
+        CustomDefaultContextLoaderClassSpringRunnerTests.class,//
+        ParameterizedDependencyInjectionTests.class,//
+        ConcreteTransactionalJUnit4SpringContextTests.class,//
+        ClassLevelTransactionalSpringRunnerTests.class,//
+        MethodLevelTransactionalSpringRunnerTests.class,//
+        DefaultRollbackTrueRollbackAnnotationTransactionalTests.class,//
+        DefaultRollbackFalseRollbackAnnotationTransactionalTests.class,//
+        RollbackOverrideDefaultRollbackTrueTransactionalTests.class,//
+        RollbackOverrideDefaultRollbackFalseTransactionalTests.class,//
+        BeforeAndAfterTransactionAnnotationTests.class,//
+        TimedTransactionalSpringRunnerTests.class,//
+        HibernateSessionFlushingTests.class //
 })
 public class SpringJUnit4TestSuite {
-	/* this test case consists entirely of tests loaded as a suite. */
+    /* this test case consists entirely of tests loaded as a suite. */
 }

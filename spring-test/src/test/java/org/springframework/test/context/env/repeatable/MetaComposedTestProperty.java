@@ -16,13 +16,13 @@
 
 package org.springframework.test.context.env.repeatable;
 
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.env.repeatable.MetaComposedTestProperty.MetaMetaInlinedTestProperty;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.env.repeatable.MetaComposedTestProperty.MetaMetaInlinedTestProperty;
 
 /**
  * Composed annotation that declares a property via
@@ -36,10 +36,10 @@ import org.springframework.test.context.env.repeatable.MetaComposedTestProperty.
 @MetaMetaInlinedTestProperty
 @interface MetaComposedTestProperty {
 
-	@Target(ElementType.TYPE)
-	@Retention(RetentionPolicy.RUNTIME)
-	@TestPropertySource(properties = "enigma = meta meta")
-	@interface MetaMetaInlinedTestProperty {
-	}
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @TestPropertySource(properties = "enigma = meta meta")
+    @interface MetaMetaInlinedTestProperty {
+    }
 
 }

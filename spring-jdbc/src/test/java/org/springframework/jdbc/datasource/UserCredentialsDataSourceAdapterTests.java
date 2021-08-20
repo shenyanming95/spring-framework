@@ -16,12 +16,11 @@
 
 package org.springframework.jdbc.datasource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
-
-import org.junit.jupiter.api.Test;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -33,45 +32,44 @@ import static org.mockito.Mockito.mock;
  */
 public class UserCredentialsDataSourceAdapterTests {
 
-	@Test
-	public void testStaticCredentials() throws SQLException {
-		DataSource dataSource = mock(DataSource.class);
-		Connection connection = mock(Connection.class);
-		given(dataSource.getConnection("user", "pw")).willReturn(connection);
+    @Test
+    public void testStaticCredentials() throws SQLException {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        given(dataSource.getConnection("user", "pw")).willReturn(connection);
 
-		UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
-		adapter.setTargetDataSource(dataSource);
-		adapter.setUsername("user");
-		adapter.setPassword("pw");
-		assertThat(adapter.getConnection()).isEqualTo(connection);
-	}
+        UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
+        adapter.setTargetDataSource(dataSource);
+        adapter.setUsername("user");
+        adapter.setPassword("pw");
+        assertThat(adapter.getConnection()).isEqualTo(connection);
+    }
 
-	@Test
-	public void testNoCredentials() throws SQLException {
-		DataSource dataSource = mock(DataSource.class);
-		Connection connection = mock(Connection.class);
-		given(dataSource.getConnection()).willReturn(connection);
-		UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
-		adapter.setTargetDataSource(dataSource);
-		assertThat(adapter.getConnection()).isEqualTo(connection);
-	}
+    @Test
+    public void testNoCredentials() throws SQLException {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        given(dataSource.getConnection()).willReturn(connection);
+        UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
+        adapter.setTargetDataSource(dataSource);
+        assertThat(adapter.getConnection()).isEqualTo(connection);
+    }
 
-	@Test
-	public void testThreadBoundCredentials() throws SQLException {
-		DataSource dataSource = mock(DataSource.class);
-		Connection connection = mock(Connection.class);
-		given(dataSource.getConnection("user", "pw")).willReturn(connection);
+    @Test
+    public void testThreadBoundCredentials() throws SQLException {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        given(dataSource.getConnection("user", "pw")).willReturn(connection);
 
-		UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
-		adapter.setTargetDataSource(dataSource);
+        UserCredentialsDataSourceAdapter adapter = new UserCredentialsDataSourceAdapter();
+        adapter.setTargetDataSource(dataSource);
 
-		adapter.setCredentialsForCurrentThread("user", "pw");
-		try {
-			assertThat(adapter.getConnection()).isEqualTo(connection);
-		}
-		finally {
-			adapter.removeCredentialsFromCurrentThread();
-		}
-	}
+        adapter.setCredentialsForCurrentThread("user", "pw");
+        try {
+            assertThat(adapter.getConnection()).isEqualTo(connection);
+        } finally {
+            adapter.removeCredentialsFromCurrentThread();
+        }
+    }
 
 }

@@ -18,7 +18,6 @@ package org.springframework.test.context.configuration.interfaces;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -33,24 +32,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 class TestPropertySourceInterfaceTests implements TestPropertySourceTestInterface {
 
-	@Autowired
-	Environment env;
+    @Autowired
+    Environment env;
 
 
-	@Test
-	void propertiesAreAvailableInEnvironment() {
-		assertThat(property("foo")).isEqualTo("bar");
-		assertThat(property("enigma")).isEqualTo("42");
-	}
+    @Test
+    void propertiesAreAvailableInEnvironment() {
+        assertThat(property("foo")).isEqualTo("bar");
+        assertThat(property("enigma")).isEqualTo("42");
+    }
 
-	private String property(String key) {
-		return env.getProperty(key);
-	}
+    private String property(String key) {
+        return env.getProperty(key);
+    }
 
 
-	@Configuration
-	static class Config {
-		/* no user beans required for these tests */
-	}
+    @Configuration
+    static class Config {
+        /* no user beans required for these tests */
+    }
 
 }

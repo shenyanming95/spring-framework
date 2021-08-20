@@ -32,35 +32,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SimpleThreadScopeTests {
 
-	private final ApplicationContext applicationContext =
-			new ClassPathXmlApplicationContext("simpleThreadScopeTests.xml", getClass());
+    private final ApplicationContext applicationContext =
+            new ClassPathXmlApplicationContext("simpleThreadScopeTests.xml", getClass());
 
 
-	@Test
-	void getFromScope() throws Exception {
-		String name = "removeNodeStatusScreen";
-		TestBean bean = this.applicationContext.getBean(name, TestBean.class);
-		assertThat(bean).isNotNull();
-		assertThat(this.applicationContext.getBean(name)).isSameAs(bean);
-		TestBean bean2 = this.applicationContext.getBean(name, TestBean.class);
-		assertThat(bean2).isSameAs(bean);
-	}
+    @Test
+    void getFromScope() throws Exception {
+        String name = "removeNodeStatusScreen";
+        TestBean bean = this.applicationContext.getBean(name, TestBean.class);
+        assertThat(bean).isNotNull();
+        assertThat(this.applicationContext.getBean(name)).isSameAs(bean);
+        TestBean bean2 = this.applicationContext.getBean(name, TestBean.class);
+        assertThat(bean2).isSameAs(bean);
+    }
 
-	@Test
-	void getMultipleInstances() throws Exception {
-		// Arrange
-		TestBean[] beans = new TestBean[2];
-		Thread thread1 = new Thread(() -> beans[0] = applicationContext.getBean("removeNodeStatusScreen", TestBean.class));
-		Thread thread2 = new Thread(() -> beans[1] = applicationContext.getBean("removeNodeStatusScreen", TestBean.class));
-		// Act
-		thread1.start();
-		thread2.start();
-		// Assert
-		Awaitility.await()
-					.atMost(500, TimeUnit.MILLISECONDS)
-					.pollInterval(10, TimeUnit.MILLISECONDS)
-					.until(() -> (beans[0] != null) && (beans[1] != null));
-		assertThat(beans[1]).isNotSameAs(beans[0]);
-	}
+    @Test
+    void getMultipleInstances() throws Exception {
+        // Arrange
+        TestBean[] beans = new TestBean[2];
+        Thread thread1 = new Thread(() -> beans[0] = applicationContext.getBean("removeNodeStatusScreen", TestBean.class));
+        Thread thread2 = new Thread(() -> beans[1] = applicationContext.getBean("removeNodeStatusScreen", TestBean.class));
+        // Act
+        thread1.start();
+        thread2.start();
+        // Assert
+        Awaitility.await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .pollInterval(10, TimeUnit.MILLISECONDS)
+                .until(() -> (beans[0] != null) && (beans[1] != null));
+        assertThat(beans[1]).isNotSameAs(beans[0]);
+    }
 
 }

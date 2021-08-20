@@ -16,11 +16,7 @@
 
 package org.springframework.beans.factory.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * An annotation that indicates 'lookup' methods, to be overridden by the container
@@ -48,20 +44,20 @@ import java.lang.annotation.Target;
  * you'll have to resort to {@code @Inject Provider<TargetBean>} or the like instead.
  *
  * @author Juergen Hoeller
- * @since 4.1
  * @see org.springframework.beans.factory.BeanFactory#getBean(Class, Object...)
  * @see org.springframework.beans.factory.BeanFactory#getBean(String, Object...)
+ * @since 4.1
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Lookup {
 
-	/**
-	 * This annotation attribute may suggest a target bean name to look up.
-	 * If not specified, the target bean will be resolved based on the
-	 * annotated method's return type declaration.
-	 */
-	String value() default "";
+    /**
+     * This annotation attribute may suggest a target bean name to look up.
+     * If not specified, the target bean will be resolved based on the
+     * annotated method's return type declaration.
+     */
+    String value() default "";
 
 }

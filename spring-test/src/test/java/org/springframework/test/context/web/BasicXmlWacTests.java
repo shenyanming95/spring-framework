@@ -17,7 +17,6 @@
 package org.springframework.test.context.web;
 
 import org.junit.Test;
-
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,9 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration
 public class BasicXmlWacTests extends AbstractBasicWacTests {
 
-	@Test
-	public void fooBarAutowired() {
-		assertThat(foo).isEqualTo("bar");
-	}
+    @Test
+    public void fooBarAutowired() {
+        assertThat(foo).isEqualTo("bar");
+    }
 
 }

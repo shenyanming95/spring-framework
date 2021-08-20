@@ -21,11 +21,11 @@ package org.springframework.beans.testfixture.beans;
  */
 public enum CustomEnum {
 
-	VALUE_1, VALUE_2;
+    VALUE_1, VALUE_2;
 
-	@Override
-	public String toString() {
-		return "CustomEnum: " + name();
-	}
+    @Override
+    public String toString() {
+        return "CustomEnum: " + name();
+    }
 
 }

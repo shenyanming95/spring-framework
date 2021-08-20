@@ -16,14 +16,8 @@
 
 package org.springframework.http.codec.cbor;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.function.Consumer;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.testfixture.io.buffer.AbstractLeakCheckingTests;
@@ -32,6 +26,11 @@ import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.MimeType;
 import org.springframework.web.testfixture.xml.Pojo;
+import reactor.core.publisher.Flux;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -45,60 +44,59 @@ import static org.springframework.http.MediaType.APPLICATION_XML;
  */
 public class Jackson2CborEncoderTests extends AbstractLeakCheckingTests {
 
-	private final static MimeType CBOR_MIME_TYPE = new MimeType("application", "cbor");
+    private final static MimeType CBOR_MIME_TYPE = new MimeType("application", "cbor");
 
-	private final ObjectMapper mapper = Jackson2ObjectMapperBuilder.cbor().build();
+    private final ObjectMapper mapper = Jackson2ObjectMapperBuilder.cbor().build();
 
-	private final Jackson2CborEncoder encoder = new Jackson2CborEncoder();
+    private final Jackson2CborEncoder encoder = new Jackson2CborEncoder();
 
-	private Consumer<DataBuffer> pojoConsumer(Pojo expected) {
-		return dataBuffer -> {
-			try {
-				Pojo actual = this.mapper.reader().forType(Pojo.class)
-						.readValue(DataBufferTestUtils.dumpBytes(dataBuffer));
-				assertThat(actual).isEqualTo(expected);
-				release(dataBuffer);
-			}
-			catch (IOException ex) {
-				throw new UncheckedIOException(ex);
-			}
-		};
-	}
+    private Consumer<DataBuffer> pojoConsumer(Pojo expected) {
+        return dataBuffer -> {
+            try {
+                Pojo actual = this.mapper.reader().forType(Pojo.class)
+                        .readValue(DataBufferTestUtils.dumpBytes(dataBuffer));
+                assertThat(actual).isEqualTo(expected);
+                release(dataBuffer);
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        };
+    }
 
-	@Test
-	public void canEncode() {
-		ResolvableType pojoType = ResolvableType.forClass(Pojo.class);
-		assertThat(this.encoder.canEncode(pojoType, CBOR_MIME_TYPE)).isTrue();
-		assertThat(this.encoder.canEncode(pojoType, null)).isTrue();
+    @Test
+    public void canEncode() {
+        ResolvableType pojoType = ResolvableType.forClass(Pojo.class);
+        assertThat(this.encoder.canEncode(pojoType, CBOR_MIME_TYPE)).isTrue();
+        assertThat(this.encoder.canEncode(pojoType, null)).isTrue();
 
-		// SPR-15464
-		assertThat(this.encoder.canEncode(ResolvableType.NONE, null)).isTrue();
-	}
+        // SPR-15464
+        assertThat(this.encoder.canEncode(ResolvableType.NONE, null)).isTrue();
+    }
 
-	@Test
-	public void canNotEncode() {
-		assertThat(this.encoder.canEncode(ResolvableType.forClass(String.class), null)).isFalse();
-		assertThat(this.encoder.canEncode(ResolvableType.forClass(Pojo.class), APPLICATION_XML)).isFalse();
+    @Test
+    public void canNotEncode() {
+        assertThat(this.encoder.canEncode(ResolvableType.forClass(String.class), null)).isFalse();
+        assertThat(this.encoder.canEncode(ResolvableType.forClass(Pojo.class), APPLICATION_XML)).isFalse();
 
-		ResolvableType sseType = ResolvableType.forClass(ServerSentEvent.class);
-		assertThat(this.encoder.canEncode(sseType, CBOR_MIME_TYPE)).isFalse();
-	}
+        ResolvableType sseType = ResolvableType.forClass(ServerSentEvent.class);
+        assertThat(this.encoder.canEncode(sseType, CBOR_MIME_TYPE)).isFalse();
+    }
 
-	@Test
-	public void encode() {
-		Pojo value = new Pojo("foo", "bar");
-		DataBuffer result = encoder.encodeValue(value, this.bufferFactory, ResolvableType.forClass(Pojo.class), CBOR_MIME_TYPE, null);
-		pojoConsumer(value).accept(result);
-	}
+    @Test
+    public void encode() {
+        Pojo value = new Pojo("foo", "bar");
+        DataBuffer result = encoder.encodeValue(value, this.bufferFactory, ResolvableType.forClass(Pojo.class), CBOR_MIME_TYPE, null);
+        pojoConsumer(value).accept(result);
+    }
 
-	@Test
-	public void encodeStream() {
-		Pojo pojo1 = new Pojo("foo", "bar");
-		Pojo pojo2 = new Pojo("foofoo", "barbar");
-		Pojo pojo3 = new Pojo("foofoofoo", "barbarbar");
-		Flux<Pojo> input = Flux.just(pojo1, pojo2, pojo3);
-		ResolvableType type = ResolvableType.forClass(Pojo.class);
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() ->
-				encoder.encode(input, this.bufferFactory, type, CBOR_MIME_TYPE, null));
-	}
+    @Test
+    public void encodeStream() {
+        Pojo pojo1 = new Pojo("foo", "bar");
+        Pojo pojo2 = new Pojo("foofoo", "barbar");
+        Pojo pojo3 = new Pojo("foofoofoo", "barbarbar");
+        Flux<Pojo> input = Flux.just(pojo1, pojo2, pojo3);
+        ResolvableType type = ResolvableType.forClass(Pojo.class);
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() ->
+                encoder.encode(input, this.bufferFactory, type, CBOR_MIME_TYPE, null));
+    }
 }

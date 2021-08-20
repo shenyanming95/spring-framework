@@ -17,7 +17,6 @@
 package org.springframework.test.context.transaction.manager;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,53 +39,53 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 class LookUpTxMgrByTypeAndDefaultNameTests {
 
-	@Autowired
-	CallCountingTransactionManager transactionManager;
+    @Autowired
+    CallCountingTransactionManager transactionManager;
 
-	@Autowired
-	CallCountingTransactionManager txManager2;
-
-
-	@Test
-	void transactionalTest() {
-		assertThat(transactionManager.begun).isEqualTo(1);
-		assertThat(transactionManager.inflight).isEqualTo(1);
-		assertThat(transactionManager.commits).isEqualTo(0);
-		assertThat(transactionManager.rollbacks).isEqualTo(0);
-
-		assertThat(txManager2.begun).isEqualTo(0);
-		assertThat(txManager2.inflight).isEqualTo(0);
-		assertThat(txManager2.commits).isEqualTo(0);
-		assertThat(txManager2.rollbacks).isEqualTo(0);
-	}
-
-	@AfterTransaction
-	void afterTransaction() {
-		assertThat(transactionManager.begun).isEqualTo(1);
-		assertThat(transactionManager.inflight).isEqualTo(0);
-		assertThat(transactionManager.commits).isEqualTo(0);
-		assertThat(transactionManager.rollbacks).isEqualTo(1);
-
-		assertThat(txManager2.begun).isEqualTo(0);
-		assertThat(txManager2.inflight).isEqualTo(0);
-		assertThat(txManager2.commits).isEqualTo(0);
-		assertThat(txManager2.rollbacks).isEqualTo(0);
-	}
+    @Autowired
+    CallCountingTransactionManager txManager2;
 
 
-	@Configuration
-	static class Config {
+    @Test
+    void transactionalTest() {
+        assertThat(transactionManager.begun).isEqualTo(1);
+        assertThat(transactionManager.inflight).isEqualTo(1);
+        assertThat(transactionManager.commits).isEqualTo(0);
+        assertThat(transactionManager.rollbacks).isEqualTo(0);
 
-		@Bean
-		PlatformTransactionManager transactionManager() {
-			return new CallCountingTransactionManager();
-		}
+        assertThat(txManager2.begun).isEqualTo(0);
+        assertThat(txManager2.inflight).isEqualTo(0);
+        assertThat(txManager2.commits).isEqualTo(0);
+        assertThat(txManager2.rollbacks).isEqualTo(0);
+    }
 
-		@Bean
-		PlatformTransactionManager txManager2() {
-			return new CallCountingTransactionManager();
-		}
+    @AfterTransaction
+    void afterTransaction() {
+        assertThat(transactionManager.begun).isEqualTo(1);
+        assertThat(transactionManager.inflight).isEqualTo(0);
+        assertThat(transactionManager.commits).isEqualTo(0);
+        assertThat(transactionManager.rollbacks).isEqualTo(1);
 
-	}
+        assertThat(txManager2.begun).isEqualTo(0);
+        assertThat(txManager2.inflight).isEqualTo(0);
+        assertThat(txManager2.commits).isEqualTo(0);
+        assertThat(txManager2.rollbacks).isEqualTo(0);
+    }
+
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        PlatformTransactionManager transactionManager() {
+            return new CallCountingTransactionManager();
+        }
+
+        @Bean
+        PlatformTransactionManager txManager2() {
+            return new CallCountingTransactionManager();
+        }
+
+    }
 
 }

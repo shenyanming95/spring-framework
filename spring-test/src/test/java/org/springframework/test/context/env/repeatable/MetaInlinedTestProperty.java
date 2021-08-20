@@ -16,12 +16,12 @@
 
 package org.springframework.test.context.env.repeatable;
 
+import org.springframework.test.context.TestPropertySource;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Composed annotation that declares a {@code meta} inlined property via

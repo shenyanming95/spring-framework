@@ -27,10 +27,10 @@ import org.springframework.core.annotation.AliasFor;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnclosingAnnotation {
 
-	@AliasFor("nested2")
-	NestedAnnotation nested1() default @NestedAnnotation;
+    @AliasFor("nested2")
+    NestedAnnotation nested1() default @NestedAnnotation;
 
-	@AliasFor("nested1")
-	NestedAnnotation nested2() default @NestedAnnotation;
+    @AliasFor("nested1")
+    NestedAnnotation nested2() default @NestedAnnotation;
 
 }

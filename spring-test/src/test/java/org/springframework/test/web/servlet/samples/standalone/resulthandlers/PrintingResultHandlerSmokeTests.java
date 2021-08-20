@@ -16,18 +16,16 @@
 
 package org.springframework.test.web.servlet.samples.standalone.resulthandlers;
 
-import java.io.StringWriter;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.result.PrintingResultHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import java.io.StringWriter;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
@@ -51,33 +49,33 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @Disabled("Not intended to be executed with the build. Comment out this line to inspect the output manually.")
 public class PrintingResultHandlerSmokeTests {
 
-	@Test
-	public void testPrint() throws Exception {
-		StringWriter writer = new StringWriter();
+    @Test
+    public void testPrint() throws Exception {
+        StringWriter writer = new StringWriter();
 
-		standaloneSetup(new SimpleController())
-			.build()
-			.perform(get("/").content("Hello Request".getBytes()))
-			.andDo(log())
-			.andDo(print())
-			.andDo(print(System.err))
-			.andDo(print(writer))
-		;
+        standaloneSetup(new SimpleController())
+                .build()
+                .perform(get("/").content("Hello Request".getBytes()))
+                .andDo(log())
+                .andDo(print())
+                .andDo(print(System.err))
+                .andDo(print(writer))
+        ;
 
-		System.out.println();
-		System.out.println("===============================================================");
-		System.out.println(writer.toString());
-	}
+        System.out.println();
+        System.out.println("===============================================================");
+        System.out.println(writer.toString());
+    }
 
 
-	@Controller
-	private static class SimpleController {
+    @Controller
+    private static class SimpleController {
 
-		@RequestMapping("/")
-		@ResponseBody
-		public String hello(HttpServletResponse response) {
-			response.addCookie(new Cookie("enigma", "42"));
-			return "Hello Response";
-		}
-	}
+        @RequestMapping("/")
+        @ResponseBody
+        public String hello(HttpServletResponse response) {
+            response.addCookie(new Cookie("enigma", "42"));
+            return "Hello Response";
+        }
+    }
 }

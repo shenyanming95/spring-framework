@@ -17,7 +17,6 @@
 package org.springframework.test.context.jdbc;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.transaction.AfterTransaction;
@@ -34,16 +33,16 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 @DirtiesContext
 class PopulatedSchemaTransactionalSqlScriptsTests extends AbstractTransactionalTests {
 
-	@BeforeTransaction
-	@AfterTransaction
-	void verifyPreAndPostTransactionDatabaseState() {
-		assertNumUsers(0);
-	}
+    @BeforeTransaction
+    @AfterTransaction
+    void verifyPreAndPostTransactionDatabaseState() {
+        assertNumUsers(0);
+    }
 
-	@Test
-	@SqlGroup(@Sql("data-add-dogbert.sql"))
-	void methodLevelScripts() {
-		assertNumUsers(1);
-	}
+    @Test
+    @SqlGroup(@Sql("data-add-dogbert.sql"))
+    void methodLevelScripts() {
+        assertNumUsers(1);
+    }
 
 }

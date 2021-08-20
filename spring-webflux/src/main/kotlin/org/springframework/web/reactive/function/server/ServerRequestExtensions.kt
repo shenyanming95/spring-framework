@@ -35,12 +35,12 @@ import java.security.Principal
  * Extension for [ServerRequest.bodyToMono] providing a `bodyToMono<Foo>()` variant
  * leveraging Kotlin reified type parameters. This extension is not subject to type
  * erasure and retains actual generic type arguments.
- * 
+ *
  * @author Sebastien Deleuze
  * @since 5.0
  */
 inline fun <reified T : Any> ServerRequest.bodyToMono(): Mono<T> =
-		bodyToMono(object : ParameterizedTypeReference<T>() {})
+        bodyToMono(object : ParameterizedTypeReference<T>() {})
 
 /**
  * Extension for [ServerRequest.bodyToFlux] providing a `bodyToFlux<Foo>()` variant
@@ -51,7 +51,7 @@ inline fun <reified T : Any> ServerRequest.bodyToMono(): Mono<T> =
  * @since 5.0
  */
 inline fun <reified T : Any> ServerRequest.bodyToFlux(): Flux<T> =
-		bodyToFlux(object : ParameterizedTypeReference<T>() {})
+        bodyToFlux(object : ParameterizedTypeReference<T>() {})
 
 /**
  * Coroutines [kotlinx.coroutines.flow.Flow] based variant of [ServerRequest.bodyToFlux].
@@ -60,7 +60,7 @@ inline fun <reified T : Any> ServerRequest.bodyToFlux(): Flux<T> =
  * @since 5.2
  */
 inline fun <reified T : Any> ServerRequest.bodyToFlow(): Flow<T> =
-		bodyToFlux<T>().asFlow()
+        bodyToFlux<T>().asFlow()
 
 /**
  * Non-nullable Coroutines variant of [ServerRequest.bodyToMono].
@@ -69,7 +69,7 @@ inline fun <reified T : Any> ServerRequest.bodyToFlow(): Flow<T> =
  * @since 5.2
  */
 suspend inline fun <reified T : Any> ServerRequest.awaitBody(): T =
-		bodyToMono<T>().awaitSingle()
+        bodyToMono<T>().awaitSingle()
 
 /**
  * Nullable Coroutines variant of [ServerRequest.bodyToMono].
@@ -78,7 +78,7 @@ suspend inline fun <reified T : Any> ServerRequest.awaitBody(): T =
  * @since 5.2
  */
 suspend inline fun <reified T : Any> ServerRequest.awaitBodyOrNull(): T? =
-		bodyToMono<T>().awaitFirstOrNull()
+        bodyToMono<T>().awaitFirstOrNull()
 
 /**
  * Coroutines variant of [ServerRequest.formData].
@@ -87,7 +87,7 @@ suspend inline fun <reified T : Any> ServerRequest.awaitBodyOrNull(): T? =
  * @since 5.2
  */
 suspend fun ServerRequest.awaitFormData(): MultiValueMap<String, String> =
-		formData().awaitSingle()
+        formData().awaitSingle()
 
 /**
  * Coroutines variant of [ServerRequest.multipartData].
@@ -96,7 +96,7 @@ suspend fun ServerRequest.awaitFormData(): MultiValueMap<String, String> =
  * @since 5.2
  */
 suspend fun ServerRequest.awaitMultipartData(): MultiValueMap<String, Part> =
-		multipartData().awaitSingle()
+        multipartData().awaitSingle()
 
 /**
  * Coroutines variant of [ServerRequest.principal].
@@ -105,7 +105,7 @@ suspend fun ServerRequest.awaitMultipartData(): MultiValueMap<String, Part> =
  * @since 5.2
  */
 suspend fun ServerRequest.awaitPrincipal(): Principal? =
-		principal().awaitFirstOrNull()
+        principal().awaitFirstOrNull()
 
 /**
  * Coroutines variant of [ServerRequest.session].
@@ -114,7 +114,7 @@ suspend fun ServerRequest.awaitPrincipal(): Principal? =
  * @since 5.2
  */
 suspend fun ServerRequest.awaitSession(): WebSession =
-		session().awaitSingle()
+        session().awaitSingle()
 
 /**
  * Nullable variant of [ServerRequest.remoteAddress]
@@ -139,16 +139,16 @@ fun ServerRequest.attributeOrNull(name: String): Any? = attributes()[name]
  * @since 5.2.2
  */
 fun ServerRequest.queryParamOrNull(name: String): String? {
-	val queryParamValues = queryParams()[name]
-	return if (CollectionUtils.isEmpty(queryParamValues)) {
-		null
-	} else {
-		var value: String? = queryParamValues!![0]
-		if (value == null) {
-			value = ""
-		}
-		value
-	}
+    val queryParamValues = queryParams()[name]
+    return if (CollectionUtils.isEmpty(queryParamValues)) {
+        null
+    } else {
+        var value: String? = queryParamValues!![0]
+        if (value == null) {
+            value = ""
+        }
+        value
+    }
 }
 
 /**
@@ -158,7 +158,7 @@ fun ServerRequest.queryParamOrNull(name: String): String? {
  * @since 5.2.2
  */
 fun ServerRequest.Headers.contentLengthOrNull(): Long? =
-		contentLength().run { if (isPresent) asLong else null }
+        contentLength().run { if (isPresent) asLong else null }
 
 /**
  * Nullable variant of [ServerRequest.Headers.contentType]
@@ -167,4 +167,4 @@ fun ServerRequest.Headers.contentLengthOrNull(): Long? =
  * @since 5.2.2
  */
 fun ServerRequest.Headers.contentTypeOrNull(): MediaType? =
-		contentType().orElse(null)
+        contentType().orElse(null)

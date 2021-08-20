@@ -16,21 +16,9 @@
 
 package org.springframework.orm.jpa.support;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.FilterChain;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.WebApplicationContext;
@@ -40,20 +28,22 @@ import org.springframework.web.context.request.async.StandardServletAsyncWebRequ
 import org.springframework.web.context.request.async.WebAsyncManager;
 import org.springframework.web.context.request.async.WebAsyncUtils;
 import org.springframework.web.context.support.StaticWebApplicationContext;
-import org.springframework.web.testfixture.servlet.MockAsyncContext;
-import org.springframework.web.testfixture.servlet.MockFilterConfig;
-import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
-import org.springframework.web.testfixture.servlet.MockHttpServletResponse;
-import org.springframework.web.testfixture.servlet.MockServletContext;
-import org.springframework.web.testfixture.servlet.PassThroughFilterChain;
+import org.springframework.web.testfixture.servlet.*;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.FilterChain;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Costin Leau
@@ -63,377 +53,370 @@ import static org.mockito.Mockito.verify;
  */
 public class OpenEntityManagerInViewTests {
 
-	private EntityManager manager;
+    private final TestTaskExecutor taskExecutor = new TestTaskExecutor();
+    private EntityManager manager;
+    private EntityManagerFactory factory;
+    private MockHttpServletRequest request;
+    private MockHttpServletResponse response;
+    private ServletWebRequest webRequest;
 
-	private EntityManagerFactory factory;
+    @BeforeEach
+    public void setUp() {
+        factory = mock(EntityManagerFactory.class);
+        manager = mock(EntityManager.class);
 
-	private MockHttpServletRequest request;
+        given(factory.createEntityManager()).willReturn(manager);
 
-	private MockHttpServletResponse response;
+        this.request = new MockHttpServletRequest();
+        this.request.setAsyncSupported(true);
+        this.response = new MockHttpServletResponse();
+        this.webRequest = new ServletWebRequest(this.request);
+    }
 
-	private ServletWebRequest webRequest;
+    @AfterEach
+    public void tearDown() {
+        assertThat(TransactionSynchronizationManager.getResourceMap().isEmpty()).isTrue();
+        assertThat(TransactionSynchronizationManager.isSynchronizationActive()).isFalse();
+        assertThat(TransactionSynchronizationManager.isCurrentTransactionReadOnly()).isFalse();
+        assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+    }
 
-	private final TestTaskExecutor taskExecutor = new TestTaskExecutor();
+    @Test
+    public void testOpenEntityManagerInViewInterceptor() {
+        OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
+        interceptor.setEntityManagerFactory(this.factory);
 
+        MockServletContext sc = new MockServletContext();
+        MockHttpServletRequest request = new MockHttpServletRequest(sc);
 
-	@BeforeEach
-	public void setUp() {
-		factory = mock(EntityManagerFactory.class);
-		manager = mock(EntityManager.class);
+        interceptor.preHandle(new ServletWebRequest(request));
+        assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
 
-		given(factory.createEntityManager()).willReturn(manager);
+        // check that further invocations simply participate
+        interceptor.preHandle(new ServletWebRequest(request));
 
-		this.request = new MockHttpServletRequest();
-		this.request.setAsyncSupported(true);
-		this.response = new MockHttpServletResponse();
-		this.webRequest = new ServletWebRequest(this.request);
-	}
+        interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-	@AfterEach
-	public void tearDown() {
-		assertThat(TransactionSynchronizationManager.getResourceMap().isEmpty()).isTrue();
-		assertThat(TransactionSynchronizationManager.isSynchronizationActive()).isFalse();
-		assertThat(TransactionSynchronizationManager.isCurrentTransactionReadOnly()).isFalse();
-		assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-	}
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-	@Test
-	public void testOpenEntityManagerInViewInterceptor() {
-		OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
-		interceptor.setEntityManagerFactory(this.factory);
+        interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-		MockServletContext sc = new MockServletContext();
-		MockHttpServletRequest request = new MockHttpServletRequest(sc);
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
 
-		interceptor.preHandle(new ServletWebRequest(request));
-		assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
+        given(manager.isOpen()).willReturn(true);
 
-		// check that further invocations simply participate
-		interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
 
-		interceptor.preHandle(new ServletWebRequest(request));
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+        verify(manager).close();
+    }
 
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+    @Test
+    public void testOpenEntityManagerInViewInterceptorAsyncScenario() throws Exception {
 
-		interceptor.preHandle(new ServletWebRequest(request));
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+        // Initial request thread
 
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+        OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
+        interceptor.setEntityManagerFactory(factory);
 
-		given(manager.isOpen()).willReturn(true);
+        given(factory.createEntityManager()).willReturn(this.manager);
 
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        interceptor.preHandle(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
 
-		verify(manager).close();
-	}
+        AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
+        WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.webRequest);
+        asyncManager.setTaskExecutor(this.taskExecutor);
+        asyncManager.setAsyncWebRequest(asyncWebRequest);
+        asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
 
-	@Test
-	public void testOpenEntityManagerInViewInterceptorAsyncScenario() throws Exception {
+        this.taskExecutor.await();
+        assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
 
-		// Initial request thread
+        interceptor.afterConcurrentHandlingStarted(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
 
-		OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
-		interceptor.setEntityManagerFactory(factory);
+        // Async dispatch thread
 
-		given(factory.createEntityManager()).willReturn(this.manager);
+        interceptor.preHandle(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
 
-		interceptor.preHandle(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+        asyncManager.clearConcurrentResult();
 
-		AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
-		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.webRequest);
-		asyncManager.setTaskExecutor(this.taskExecutor);
-		asyncManager.setAsyncWebRequest(asyncWebRequest);
-		asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
+        // check that further invocations simply participate
+        interceptor.preHandle(new ServletWebRequest(request));
 
-		this.taskExecutor.await();
-		assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
+        interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-		interceptor.afterConcurrentHandlingStarted(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-		// Async dispatch thread
+        interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.postHandle(new ServletWebRequest(request), null);
+        interceptor.afterCompletion(new ServletWebRequest(request), null);
 
-		interceptor.preHandle(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+        interceptor.postHandle(this.webRequest, null);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
 
-		asyncManager.clearConcurrentResult();
+        given(this.manager.isOpen()).willReturn(true);
 
-		// check that further invocations simply participate
-		interceptor.preHandle(new ServletWebRequest(request));
+        interceptor.afterCompletion(this.webRequest, null);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
 
-		interceptor.preHandle(new ServletWebRequest(request));
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+        verify(this.manager).close();
+    }
 
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+    @Test
+    public void testOpenEntityManagerInViewInterceptorAsyncTimeoutScenario() throws Exception {
 
-		interceptor.preHandle(new ServletWebRequest(request));
-		interceptor.postHandle(new ServletWebRequest(request), null);
-		interceptor.afterCompletion(new ServletWebRequest(request), null);
+        // Initial request thread
 
-		interceptor.postHandle(this.webRequest, null);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+        OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
+        interceptor.setEntityManagerFactory(factory);
 
-		given(this.manager.isOpen()).willReturn(true);
+        given(this.factory.createEntityManager()).willReturn(this.manager);
 
-		interceptor.afterCompletion(this.webRequest, null);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        interceptor.preHandle(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
 
-		verify(this.manager).close();
-	}
+        AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
+        WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
+        asyncManager.setTaskExecutor(this.taskExecutor);
+        asyncManager.setAsyncWebRequest(asyncWebRequest);
+        asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
 
-	@Test
-	public void testOpenEntityManagerInViewInterceptorAsyncTimeoutScenario() throws Exception {
+        this.taskExecutor.await();
+        assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
 
-		// Initial request thread
+        interceptor.afterConcurrentHandlingStarted(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isFalse();
 
-		OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
-		interceptor.setEntityManagerFactory(factory);
+        // Async request timeout
 
-		given(this.factory.createEntityManager()).willReturn(this.manager);
+        given(this.manager.isOpen()).willReturn(true);
 
-		interceptor.preHandle(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
+        MockAsyncContext asyncContext = (MockAsyncContext) this.request.getAsyncContext();
+        for (AsyncListener listener : asyncContext.getListeners()) {
+            listener.onTimeout(new AsyncEvent(asyncContext));
+        }
+        for (AsyncListener listener : asyncContext.getListeners()) {
+            listener.onComplete(new AsyncEvent(asyncContext));
+        }
 
-		AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
-		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
-		asyncManager.setTaskExecutor(this.taskExecutor);
-		asyncManager.setAsyncWebRequest(asyncWebRequest);
-		asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
+        verify(this.manager).close();
+    }
 
-		this.taskExecutor.await();
-		assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
+    @Test
+    public void testOpenEntityManagerInViewInterceptorAsyncErrorScenario() throws Exception {
 
-		interceptor.afterConcurrentHandlingStarted(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isFalse();
+        // Initial request thread
 
-		// Async request timeout
+        OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
+        interceptor.setEntityManagerFactory(factory);
 
-		given(this.manager.isOpen()).willReturn(true);
+        given(this.factory.createEntityManager()).willReturn(this.manager);
 
-		MockAsyncContext asyncContext = (MockAsyncContext) this.request.getAsyncContext();
-		for (AsyncListener listener : asyncContext.getListeners()) {
-			listener.onTimeout(new AsyncEvent(asyncContext));
-		}
-		for (AsyncListener listener : asyncContext.getListeners()) {
-			listener.onComplete(new AsyncEvent(asyncContext));
-		}
+        interceptor.preHandle(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
 
-		verify(this.manager).close();
-	}
+        AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
+        WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
+        asyncManager.setTaskExecutor(this.taskExecutor);
+        asyncManager.setAsyncWebRequest(asyncWebRequest);
+        asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
 
-	@Test
-	public void testOpenEntityManagerInViewInterceptorAsyncErrorScenario() throws Exception {
+        this.taskExecutor.await();
+        assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
 
-		// Initial request thread
+        interceptor.afterConcurrentHandlingStarted(this.webRequest);
+        assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isFalse();
 
-		OpenEntityManagerInViewInterceptor interceptor = new OpenEntityManagerInViewInterceptor();
-		interceptor.setEntityManagerFactory(factory);
+        // Async request error
 
-		given(this.factory.createEntityManager()).willReturn(this.manager);
+        given(this.manager.isOpen()).willReturn(true);
 
-		interceptor.preHandle(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isTrue();
+        MockAsyncContext asyncContext = (MockAsyncContext) this.request.getAsyncContext();
+        for (AsyncListener listener : asyncContext.getListeners()) {
+            listener.onError(new AsyncEvent(asyncContext, new Exception()));
+        }
+        for (AsyncListener listener : asyncContext.getListeners()) {
+            listener.onComplete(new AsyncEvent(asyncContext));
+        }
 
-		AsyncWebRequest asyncWebRequest = new StandardServletAsyncWebRequest(this.request, this.response);
-		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
-		asyncManager.setTaskExecutor(this.taskExecutor);
-		asyncManager.setAsyncWebRequest(asyncWebRequest);
-		asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
+        verify(this.manager).close();
+    }
 
-		this.taskExecutor.await();
-		assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
+    @Test
+    public void testOpenEntityManagerInViewFilter() throws Exception {
+        given(manager.isOpen()).willReturn(true);
 
-		interceptor.afterConcurrentHandlingStarted(this.webRequest);
-		assertThat(TransactionSynchronizationManager.hasResource(this.factory)).isFalse();
+        final EntityManagerFactory factory2 = mock(EntityManagerFactory.class);
+        final EntityManager manager2 = mock(EntityManager.class);
 
-		// Async request error
+        given(factory2.createEntityManager()).willReturn(manager2);
+        given(manager2.isOpen()).willReturn(true);
 
-		given(this.manager.isOpen()).willReturn(true);
+        MockServletContext sc = new MockServletContext();
+        StaticWebApplicationContext wac = new StaticWebApplicationContext();
+        wac.setServletContext(sc);
+        wac.getDefaultListableBeanFactory().registerSingleton("entityManagerFactory", factory);
+        wac.getDefaultListableBeanFactory().registerSingleton("myEntityManagerFactory", factory2);
+        wac.refresh();
+        sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
+        MockHttpServletRequest request = new MockHttpServletRequest(sc);
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-		MockAsyncContext asyncContext = (MockAsyncContext) this.request.getAsyncContext();
-		for (AsyncListener listener : asyncContext.getListeners()) {
-			listener.onError(new AsyncEvent(asyncContext, new Exception()));
-		}
-		for (AsyncListener listener : asyncContext.getListeners()) {
-			listener.onComplete(new AsyncEvent(asyncContext));
-		}
+        MockFilterConfig filterConfig = new MockFilterConfig(wac.getServletContext(), "filter");
+        MockFilterConfig filterConfig2 = new MockFilterConfig(wac.getServletContext(), "filter2");
+        filterConfig2.addInitParameter("entityManagerFactoryBeanName", "myEntityManagerFactory");
 
-		verify(this.manager).close();
-	}
+        final OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
+        filter.init(filterConfig);
+        final OpenEntityManagerInViewFilter filter2 = new OpenEntityManagerInViewFilter();
+        filter2.init(filterConfig2);
 
-	@Test
-	public void testOpenEntityManagerInViewFilter() throws Exception {
-		given(manager.isOpen()).willReturn(true);
+        final FilterChain filterChain = (servletRequest, servletResponse) -> {
+            assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+            servletRequest.setAttribute("invoked", Boolean.TRUE);
+        };
 
-		final EntityManagerFactory factory2 = mock(EntityManagerFactory.class);
-		final EntityManager manager2 = mock(EntityManager.class);
+        final FilterChain filterChain2 = (servletRequest, servletResponse) -> {
+            assertThat(TransactionSynchronizationManager.hasResource(factory2)).isTrue();
+            filter.doFilter(servletRequest, servletResponse, filterChain);
+        };
 
-		given(factory2.createEntityManager()).willReturn(manager2);
-		given(manager2.isOpen()).willReturn(true);
+        FilterChain filterChain3 = new PassThroughFilterChain(filter2, filterChain2);
 
-		MockServletContext sc = new MockServletContext();
-		StaticWebApplicationContext wac = new StaticWebApplicationContext();
-		wac.setServletContext(sc);
-		wac.getDefaultListableBeanFactory().registerSingleton("entityManagerFactory", factory);
-		wac.getDefaultListableBeanFactory().registerSingleton("myEntityManagerFactory", factory2);
-		wac.refresh();
-		sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
-		MockHttpServletRequest request = new MockHttpServletRequest(sc);
-		MockHttpServletResponse response = new MockHttpServletResponse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        filter2.doFilter(request, response, filterChain3);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        assertThat(request.getAttribute("invoked")).isNotNull();
 
-		MockFilterConfig filterConfig = new MockFilterConfig(wac.getServletContext(), "filter");
-		MockFilterConfig filterConfig2 = new MockFilterConfig(wac.getServletContext(), "filter2");
-		filterConfig2.addInitParameter("entityManagerFactoryBeanName", "myEntityManagerFactory");
+        verify(manager).close();
+        verify(manager2).close();
 
-		final OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
-		filter.init(filterConfig);
-		final OpenEntityManagerInViewFilter filter2 = new OpenEntityManagerInViewFilter();
-		filter2.init(filterConfig2);
+        wac.close();
+    }
 
-		final FilterChain filterChain = (servletRequest, servletResponse) -> {
-			assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
-			servletRequest.setAttribute("invoked", Boolean.TRUE);
-		};
+    @Test
+    public void testOpenEntityManagerInViewFilterAsyncScenario() throws Exception {
+        given(manager.isOpen()).willReturn(true);
 
-		final FilterChain filterChain2 = (servletRequest, servletResponse) -> {
-			assertThat(TransactionSynchronizationManager.hasResource(factory2)).isTrue();
-			filter.doFilter(servletRequest, servletResponse, filterChain);
-		};
+        final EntityManagerFactory factory2 = mock(EntityManagerFactory.class);
+        final EntityManager manager2 = mock(EntityManager.class);
 
-		FilterChain filterChain3 = new PassThroughFilterChain(filter2, filterChain2);
+        given(factory2.createEntityManager()).willReturn(manager2);
+        given(manager2.isOpen()).willReturn(true);
 
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		filter2.doFilter(request, response, filterChain3);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		assertThat(request.getAttribute("invoked")).isNotNull();
+        MockServletContext sc = new MockServletContext();
+        StaticWebApplicationContext wac = new StaticWebApplicationContext();
+        wac.setServletContext(sc);
+        wac.getDefaultListableBeanFactory().registerSingleton("entityManagerFactory", factory);
+        wac.getDefaultListableBeanFactory().registerSingleton("myEntityManagerFactory", factory2);
+        wac.refresh();
+        sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
 
-		verify(manager).close();
-		verify(manager2).close();
+        MockFilterConfig filterConfig = new MockFilterConfig(wac.getServletContext(), "filter");
+        MockFilterConfig filterConfig2 = new MockFilterConfig(wac.getServletContext(), "filter2");
+        filterConfig2.addInitParameter("entityManagerFactoryBeanName", "myEntityManagerFactory");
 
-		wac.close();
-	}
+        final OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
+        filter.init(filterConfig);
+        final OpenEntityManagerInViewFilter filter2 = new OpenEntityManagerInViewFilter();
+        filter2.init(filterConfig2);
 
-	@Test
-	public void testOpenEntityManagerInViewFilterAsyncScenario() throws Exception {
-		given(manager.isOpen()).willReturn(true);
+        final AtomicInteger count = new AtomicInteger(0);
 
-		final EntityManagerFactory factory2 = mock(EntityManagerFactory.class);
-		final EntityManager manager2 = mock(EntityManager.class);
+        final FilterChain filterChain = (servletRequest, servletResponse) -> {
+            assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
+            servletRequest.setAttribute("invoked", Boolean.TRUE);
+            count.incrementAndGet();
+        };
 
-		given(factory2.createEntityManager()).willReturn(manager2);
-		given(manager2.isOpen()).willReturn(true);
+        final AtomicInteger count2 = new AtomicInteger(0);
 
-		MockServletContext sc = new MockServletContext();
-		StaticWebApplicationContext wac = new StaticWebApplicationContext();
-		wac.setServletContext(sc);
-		wac.getDefaultListableBeanFactory().registerSingleton("entityManagerFactory", factory);
-		wac.getDefaultListableBeanFactory().registerSingleton("myEntityManagerFactory", factory2);
-		wac.refresh();
-		sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
+        final FilterChain filterChain2 = (servletRequest, servletResponse) -> {
+            assertThat(TransactionSynchronizationManager.hasResource(factory2)).isTrue();
+            filter.doFilter(servletRequest, servletResponse, filterChain);
+            count2.incrementAndGet();
+        };
 
-		MockFilterConfig filterConfig = new MockFilterConfig(wac.getServletContext(), "filter");
-		MockFilterConfig filterConfig2 = new MockFilterConfig(wac.getServletContext(), "filter2");
-		filterConfig2.addInitParameter("entityManagerFactoryBeanName", "myEntityManagerFactory");
+        FilterChain filterChain3 = new PassThroughFilterChain(filter2, filterChain2);
 
-		final OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
-		filter.init(filterConfig);
-		final OpenEntityManagerInViewFilter filter2 = new OpenEntityManagerInViewFilter();
-		filter2.init(filterConfig2);
+        AsyncWebRequest asyncWebRequest = mock(AsyncWebRequest.class);
+        given(asyncWebRequest.isAsyncStarted()).willReturn(true);
 
-		final AtomicInteger count = new AtomicInteger(0);
+        WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
+        asyncManager.setTaskExecutor(this.taskExecutor);
+        asyncManager.setAsyncWebRequest(asyncWebRequest);
+        asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
 
-		final FilterChain filterChain = (servletRequest, servletResponse) -> {
-			assertThat(TransactionSynchronizationManager.hasResource(factory)).isTrue();
-			servletRequest.setAttribute("invoked", Boolean.TRUE);
-			count.incrementAndGet();
-		};
+        this.taskExecutor.await();
+        assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
 
-		final AtomicInteger count2 = new AtomicInteger(0);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        filter2.doFilter(this.request, this.response, filterChain3);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        assertThat(count.get()).isEqualTo(1);
+        assertThat(count2.get()).isEqualTo(1);
+        assertThat(request.getAttribute("invoked")).isNotNull();
+        verify(asyncWebRequest, times(2)).addCompletionHandler(any(Runnable.class));
+        verify(asyncWebRequest).addTimeoutHandler(any(Runnable.class));
+        verify(asyncWebRequest, times(2)).addCompletionHandler(any(Runnable.class));
+        verify(asyncWebRequest).startAsync();
 
-		final FilterChain filterChain2 = (servletRequest, servletResponse) -> {
-			assertThat(TransactionSynchronizationManager.hasResource(factory2)).isTrue();
-			filter.doFilter(servletRequest, servletResponse, filterChain);
-			count2.incrementAndGet();
-		};
+        // Async dispatch after concurrent handling produces result ...
 
-		FilterChain filterChain3 = new PassThroughFilterChain(filter2, filterChain2);
+        reset(asyncWebRequest);
+        given(asyncWebRequest.isAsyncStarted()).willReturn(false);
 
-		AsyncWebRequest asyncWebRequest = mock(AsyncWebRequest.class);
-		given(asyncWebRequest.isAsyncStarted()).willReturn(true);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        filter.doFilter(this.request, this.response, filterChain3);
+        assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
+        assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
+        assertThat(count.get()).isEqualTo(2);
+        assertThat(count2.get()).isEqualTo(2);
 
-		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(this.request);
-		asyncManager.setTaskExecutor(this.taskExecutor);
-		asyncManager.setAsyncWebRequest(asyncWebRequest);
-		asyncManager.startCallableProcessing((Callable<String>) () -> "anything");
+        verify(this.manager).close();
+        verify(manager2).close();
 
-		this.taskExecutor.await();
-		assertThat(asyncManager.getConcurrentResult()).as("Concurrent result ").isEqualTo("anything");
+        wac.close();
+    }
 
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		filter2.doFilter(this.request, this.response, filterChain3);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		assertThat(count.get()).isEqualTo(1);
-		assertThat(count2.get()).isEqualTo(1);
-		assertThat(request.getAttribute("invoked")).isNotNull();
-		verify(asyncWebRequest, times(2)).addCompletionHandler(any(Runnable.class));
-		verify(asyncWebRequest).addTimeoutHandler(any(Runnable.class));
-		verify(asyncWebRequest, times(2)).addCompletionHandler(any(Runnable.class));
-		verify(asyncWebRequest).startAsync();
 
-		// Async dispatch after concurrent handling produces result ...
+    @SuppressWarnings("serial")
+    private static class TestTaskExecutor extends SimpleAsyncTaskExecutor {
 
-		reset(asyncWebRequest);
-		given(asyncWebRequest.isAsyncStarted()).willReturn(false);
+        private final CountDownLatch latch = new CountDownLatch(1);
 
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		filter.doFilter(this.request, this.response, filterChain3);
-		assertThat(TransactionSynchronizationManager.hasResource(factory)).isFalse();
-		assertThat(TransactionSynchronizationManager.hasResource(factory2)).isFalse();
-		assertThat(count.get()).isEqualTo(2);
-		assertThat(count2.get()).isEqualTo(2);
+        @Override
+        public void execute(Runnable task, long startTimeout) {
+            Runnable decoratedTask = () -> {
+                try {
+                    task.run();
+                } finally {
+                    latch.countDown();
+                }
+            };
+            super.execute(decoratedTask, startTimeout);
+        }
 
-		verify(this.manager).close();
-		verify(manager2).close();
-
-		wac.close();
-	}
-
-
-	@SuppressWarnings("serial")
-	private static class TestTaskExecutor extends SimpleAsyncTaskExecutor {
-
-		private final CountDownLatch latch = new CountDownLatch(1);
-
-		@Override
-		public void execute(Runnable task, long startTimeout) {
-			Runnable decoratedTask = () -> {
-				try {
-					task.run();
-				}
-				finally {
-					latch.countDown();
-				}
-			};
-			super.execute(decoratedTask, startTimeout);
-		}
-
-		void await() throws InterruptedException {
-			this.latch.await(5, TimeUnit.SECONDS);
-		}
-	}
+        void await() throws InterruptedException {
+            this.latch.await(5, TimeUnit.SECONDS);
+        }
+    }
 
 }

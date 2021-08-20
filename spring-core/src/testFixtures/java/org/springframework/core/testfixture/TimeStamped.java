@@ -24,11 +24,12 @@ package org.springframework.core.testfixture;
  */
 public interface TimeStamped {
 
-	/**
-	 * Return the timestamp for this object.
-	 * @return long the timestamp for this object,
-	 * as returned by System.currentTimeMillis()
-	 */
-	long getTimeStamp();
+    /**
+     * Return the timestamp for this object.
+     *
+     * @return long the timestamp for this object,
+     * as returned by System.currentTimeMillis()
+     */
+    long getTimeStamp();
 
 }

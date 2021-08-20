@@ -16,13 +16,12 @@
 
 package org.springframework.contextsupport.testfixture.cache;
 
-import java.lang.annotation.Annotation;
+import org.springframework.cache.interceptor.SimpleKey;
 
 import javax.cache.annotation.CacheKeyGenerator;
 import javax.cache.annotation.CacheKeyInvocationContext;
 import javax.cache.annotation.GeneratedCacheKey;
-
-import org.springframework.cache.interceptor.SimpleKey;
+import java.lang.annotation.Annotation;
 
 /**
  * A simple test key generator that only takes the first key arguments into
@@ -33,19 +32,19 @@ import org.springframework.cache.interceptor.SimpleKey;
  */
 public class TestableCacheKeyGenerator implements CacheKeyGenerator {
 
-	@Override
-	public GeneratedCacheKey generateCacheKey(CacheKeyInvocationContext<? extends Annotation> context) {
-		return new SimpleGeneratedCacheKey(context.getKeyParameters()[0]);
-	}
+    @Override
+    public GeneratedCacheKey generateCacheKey(CacheKeyInvocationContext<? extends Annotation> context) {
+        return new SimpleGeneratedCacheKey(context.getKeyParameters()[0]);
+    }
 
 
-	@SuppressWarnings("serial")
-	private static class SimpleGeneratedCacheKey extends SimpleKey implements GeneratedCacheKey {
+    @SuppressWarnings("serial")
+    private static class SimpleGeneratedCacheKey extends SimpleKey implements GeneratedCacheKey {
 
-		public SimpleGeneratedCacheKey(Object... elements) {
-			super(elements);
-		}
+        public SimpleGeneratedCacheKey(Object... elements) {
+            super(elements);
+        }
 
-	}
+    }
 
 }

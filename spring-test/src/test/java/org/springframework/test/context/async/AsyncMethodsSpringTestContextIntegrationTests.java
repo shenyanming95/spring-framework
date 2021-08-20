@@ -18,7 +18,6 @@ package org.springframework.test.context.async;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
@@ -41,28 +40,28 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 @Disabled("Only meant to be executed manually")
 class AsyncMethodsSpringTestContextIntegrationTests {
 
-	@RepeatedTest(200)
-	@DirtiesContext
-	void test() {
-		// If we don't run out of memory, then this test is a success.
-	}
+    @RepeatedTest(200)
+    @DirtiesContext
+    void test() {
+        // If we don't run out of memory, then this test is a success.
+    }
 
 
-	@Configuration
-	@EnableAsync
-	static class Config {
+    @Configuration
+    @EnableAsync
+    static class Config {
 
-		@Bean
-		AsyncService asyncService() {
-			return new AsyncService();
-		}
-	}
+        @Bean
+        AsyncService asyncService() {
+            return new AsyncService();
+        }
+    }
 
-	static class AsyncService {
+    static class AsyncService {
 
-		@Async
-		void asyncMethod() {
-		}
-	}
+        @Async
+        void asyncMethod() {
+        }
+    }
 
 }

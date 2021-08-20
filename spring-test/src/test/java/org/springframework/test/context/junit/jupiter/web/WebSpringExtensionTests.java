@@ -18,7 +18,6 @@ package org.springframework.test.context.junit.jupiter.web;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.SpringJUnitJupiterTestSuite;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -46,23 +45,23 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  * Platform, simply run {@link SpringJUnitJupiterTestSuite} as a JUnit 4 test.
  *
  * @author Sam Brannen
- * @since 5.0
  * @see SpringExtension
  * @see SpringJUnitWebConfig
  * @see org.springframework.test.context.junit.jupiter.web.MultipleWebRequestsSpringExtensionTests
  * @see org.springframework.test.context.junit.jupiter.SpringExtensionTests
  * @see org.springframework.test.context.junit.jupiter.ComposedSpringExtensionTests
+ * @since 5.0
  */
 @SpringJUnitWebConfig(WebConfig.class)
 @DisplayName("Web SpringExtension Tests")
 class WebSpringExtensionTests {
 
-	@Test
-	void springMvcTest(WebApplicationContext wac) throws Exception {
-		webAppContextSetup(wac).build()
-			.perform(get("/person/42").accept(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name", is("Dilbert")));
-	}
+    @Test
+    void springMvcTest(WebApplicationContext wac) throws Exception {
+        webAppContextSetup(wac).build()
+                .perform(get("/person/42").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Dilbert")));
+    }
 
 }

@@ -16,11 +16,11 @@
 
 package org.springframework.core.testfixture;
 
-import java.io.InputStream;
-import java.util.logging.LogManager;
-
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
+
+import java.io.InputStream;
+import java.util.logging.LogManager;
 
 /**
  * JUnit Platform {@link TestExecutionListener} that configures Java Util Logging
@@ -39,18 +39,17 @@ import org.junit.platform.launcher.TestPlan;
  */
 public class JavaUtilLoggingConfigurer implements TestExecutionListener {
 
-	public static final String JUL_TEST_PROPERTIES_FILE = "jul-test.properties";
+    public static final String JUL_TEST_PROPERTIES_FILE = "jul-test.properties";
 
 
-	@Override
-	public void testPlanExecutionStarted(TestPlan testPlan) {
-		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(JUL_TEST_PROPERTIES_FILE)) {
-			LogManager.getLogManager().readConfiguration(inputStream);
-		}
-		catch (Exception ex) {
-			System.err.println("WARNING: failed to configure Java Util Logging from classpath resource " +
-					JUL_TEST_PROPERTIES_FILE);
-			System.err.println(ex);
-		}
-	}
+    @Override
+    public void testPlanExecutionStarted(TestPlan testPlan) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(JUL_TEST_PROPERTIES_FILE)) {
+            LogManager.getLogManager().readConfiguration(inputStream);
+        } catch (Exception ex) {
+            System.err.println("WARNING: failed to configure Java Util Logging from classpath resource " +
+                    JUL_TEST_PROPERTIES_FILE);
+            System.err.println(ex);
+        }
+    }
 }

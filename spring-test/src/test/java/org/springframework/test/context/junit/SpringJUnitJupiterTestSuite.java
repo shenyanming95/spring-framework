@@ -17,11 +17,7 @@
 package org.springframework.test.context.junit;
 
 import org.junit.platform.runner.JUnitPlatform;
-import org.junit.platform.suite.api.ExcludeTags;
-import org.junit.platform.suite.api.IncludeClassNamePatterns;
-import org.junit.platform.suite.api.IncludeEngines;
-import org.junit.platform.suite.api.SelectPackages;
-import org.junit.platform.suite.api.UseTechnicalNames;
+import org.junit.platform.suite.api.*;
 import org.junit.runner.RunWith;
 
 /**

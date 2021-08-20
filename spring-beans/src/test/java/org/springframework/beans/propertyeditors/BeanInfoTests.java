@@ -16,16 +16,15 @@
 
 package org.springframework.beans.propertyeditors;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,76 +34,75 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class BeanInfoTests {
 
-	@Test
-	public void testComplexObject() {
-		ValueBean bean = new ValueBean();
-		BeanWrapper bw = new BeanWrapperImpl(bean);
-		Integer value = 1;
+    @Test
+    public void testComplexObject() {
+        ValueBean bean = new ValueBean();
+        BeanWrapper bw = new BeanWrapperImpl(bean);
+        Integer value = 1;
 
-		bw.setPropertyValue("value", value);
-		assertThat(value).as("value not set correctly").isEqualTo(bean.getValue());
+        bw.setPropertyValue("value", value);
+        assertThat(value).as("value not set correctly").isEqualTo(bean.getValue());
 
-		value = 2;
-		bw.setPropertyValue("value", value.toString());
-		assertThat(value).as("value not converted").isEqualTo(bean.getValue());
+        value = 2;
+        bw.setPropertyValue("value", value.toString());
+        assertThat(value).as("value not converted").isEqualTo(bean.getValue());
 
-		bw.setPropertyValue("value", null);
-		assertThat(bean.getValue()).as("value not null").isNull();
+        bw.setPropertyValue("value", null);
+        assertThat(bean.getValue()).as("value not null").isNull();
 
-		bw.setPropertyValue("value", "");
-		assertThat(bean.getValue()).as("value not converted to null").isNull();
-	}
-
-
-	public static class ValueBean {
-
-		private Integer value;
-
-		public Integer getValue() {
-			return value;
-		}
-
-		public void setValue(Integer value) {
-			this.value = value;
-		}
-	}
+        bw.setPropertyValue("value", "");
+        assertThat(bean.getValue()).as("value not converted to null").isNull();
+    }
 
 
-	public static class ValueBeanBeanInfo extends SimpleBeanInfo {
+    public static class ValueBean {
 
-		@Override
-		public PropertyDescriptor[] getPropertyDescriptors() {
-			try {
-				PropertyDescriptor pd = new PropertyDescriptor("value", ValueBean.class);
-				pd.setPropertyEditorClass(MyNumberEditor.class);
-				return new PropertyDescriptor[] {pd};
-			}
-			catch (IntrospectionException ex) {
-				throw new FatalBeanException("Couldn't create PropertyDescriptor", ex);
-			}
-		}
-	}
+        private Integer value;
+
+        public Integer getValue() {
+            return value;
+        }
+
+        public void setValue(Integer value) {
+            this.value = value;
+        }
+    }
 
 
-	public static class MyNumberEditor extends CustomNumberEditor {
+    public static class ValueBeanBeanInfo extends SimpleBeanInfo {
 
-		private Object target;
+        @Override
+        public PropertyDescriptor[] getPropertyDescriptors() {
+            try {
+                PropertyDescriptor pd = new PropertyDescriptor("value", ValueBean.class);
+                pd.setPropertyEditorClass(MyNumberEditor.class);
+                return new PropertyDescriptor[]{pd};
+            } catch (IntrospectionException ex) {
+                throw new FatalBeanException("Couldn't create PropertyDescriptor", ex);
+            }
+        }
+    }
 
-		public MyNumberEditor() throws IllegalArgumentException {
-			super(Integer.class, true);
-		}
 
-		public MyNumberEditor(Object target) throws IllegalArgumentException {
-			super(Integer.class, true);
-			this.target = target;
-		}
+    public static class MyNumberEditor extends CustomNumberEditor {
 
-		@Override
-		public void setAsText(String text) throws IllegalArgumentException {
-			Assert.isTrue(this.target instanceof ValueBean, "Target must be available");
-			super.setAsText(text);
-		}
+        private Object target;
 
-	}
+        public MyNumberEditor() throws IllegalArgumentException {
+            super(Integer.class, true);
+        }
+
+        public MyNumberEditor(Object target) throws IllegalArgumentException {
+            super(Integer.class, true);
+            this.target = target;
+        }
+
+        @Override
+        public void setAsText(String text) throws IllegalArgumentException {
+            Assert.isTrue(this.target instanceof ValueBean, "Target must be available");
+            super.setAsText(text);
+        }
+
+    }
 
 }

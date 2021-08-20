@@ -17,7 +17,6 @@
 package org.springframework.web.context.support;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,35 +33,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SpringBeanAutowiringSupportTests {
 
-	@Test
-	public void testProcessInjectionBasedOnServletContext() {
-		StaticWebApplicationContext wac = new StaticWebApplicationContext();
-		AnnotationConfigUtils.registerAnnotationConfigProcessors(wac);
+    @Test
+    public void testProcessInjectionBasedOnServletContext() {
+        StaticWebApplicationContext wac = new StaticWebApplicationContext();
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(wac);
 
-		MutablePropertyValues pvs = new MutablePropertyValues();
-		pvs.add("name", "tb");
-		wac.registerSingleton("testBean", TestBean.class, pvs);
+        MutablePropertyValues pvs = new MutablePropertyValues();
+        pvs.add("name", "tb");
+        wac.registerSingleton("testBean", TestBean.class, pvs);
 
-		MockServletContext sc = new MockServletContext();
-		wac.setServletContext(sc);
-		wac.refresh();
-		sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
+        MockServletContext sc = new MockServletContext();
+        wac.setServletContext(sc);
+        wac.refresh();
+        sc.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, wac);
 
-		InjectionTarget target = new InjectionTarget();
-		SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(target, sc);
-		boolean condition = target.testBean instanceof TestBean;
-		assertThat(condition).isTrue();
-		assertThat(target.name).isEqualTo("tb");
-	}
+        InjectionTarget target = new InjectionTarget();
+        SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(target, sc);
+        boolean condition = target.testBean instanceof TestBean;
+        assertThat(condition).isTrue();
+        assertThat(target.name).isEqualTo("tb");
+    }
 
 
-	public static class InjectionTarget {
+    public static class InjectionTarget {
 
-		@Autowired
-		public ITestBean testBean;
+        @Autowired
+        public ITestBean testBean;
 
-		@Value("#{testBean.name}")
-		public String name;
-	}
+        @Value("#{testBean.name}")
+        public String name;
+    }
 
 }

@@ -26,9 +26,9 @@ package org.springframework.aop.aspectj.annotation;
  */
 class ReflectiveAspectJAdvisorFactoryTests extends AbstractAspectJAdvisorFactoryTests {
 
-	@Override
-	protected AspectJAdvisorFactory getFixture() {
-		return new ReflectiveAspectJAdvisorFactory();
-	}
+    @Override
+    protected AspectJAdvisorFactory getFixture() {
+        return new ReflectiveAspectJAdvisorFactory();
+    }
 
 }

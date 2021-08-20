@@ -20,7 +20,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -43,33 +42,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource("SystemPropertyOverridePropertiesFileTestPropertySourceTests.properties")
 class SystemPropertyOverridePropertiesFileTestPropertySourceTests {
 
-	private static final String KEY = SystemPropertyOverridePropertiesFileTestPropertySourceTests.class.getSimpleName() + ".riddle";
+    private static final String KEY = SystemPropertyOverridePropertiesFileTestPropertySourceTests.class.getSimpleName() + ".riddle";
 
-	@Autowired
-	protected Environment env;
-
-
-	@BeforeAll
-	static void setSystemProperty() {
-		System.setProperty(KEY, "override me!");
-	}
-
-	@AfterAll
-	static void removeSystemProperty() {
-		System.setProperty(KEY, "");
-	}
-
-	@Test
-	void verifyPropertiesAreAvailableInEnvironment() {
-		assertThat(env.getProperty(KEY)).isEqualTo("enigma");
-	}
+    @Autowired
+    protected Environment env;
 
 
-	// -------------------------------------------------------------------
+    @BeforeAll
+    static void setSystemProperty() {
+        System.setProperty(KEY, "override me!");
+    }
 
-	@Configuration
-	static class Config {
-		/* no user beans required for these tests */
-	}
+    @AfterAll
+    static void removeSystemProperty() {
+        System.setProperty(KEY, "");
+    }
+
+    @Test
+    void verifyPropertiesAreAvailableInEnvironment() {
+        assertThat(env.getProperty(KEY)).isEqualTo("enigma");
+    }
+
+
+    // -------------------------------------------------------------------
+
+    @Configuration
+    static class Config {
+        /* no user beans required for these tests */
+    }
 
 }

@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SimpleIdGenerator implements IdGenerator {
 
-	private final AtomicLong leastSigBits = new AtomicLong(0);
+    private final AtomicLong leastSigBits = new AtomicLong(0);
 
 
-	@Override
-	public UUID generateId() {
-		return new UUID(0, this.leastSigBits.incrementAndGet());
-	}
+    @Override
+    public UUID generateId() {
+        return new UUID(0, this.leastSigBits.incrementAndGet());
+    }
 
 }

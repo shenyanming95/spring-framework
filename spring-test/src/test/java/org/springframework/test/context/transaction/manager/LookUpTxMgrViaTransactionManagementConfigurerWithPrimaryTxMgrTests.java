@@ -17,7 +17,6 @@
 package org.springframework.test.context.transaction.manager;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -47,56 +46,56 @@ import static org.assertj.core.api.Assertions.assertThat;
 // TODO Update assertions once https://github.com/spring-projects/spring-framework/issues/24869 is fixed.
 class LookUpTxMgrViaTransactionManagementConfigurerWithPrimaryTxMgrTests {
 
-	@Autowired
-	CallCountingTransactionManager primary;
+    @Autowired
+    CallCountingTransactionManager primary;
 
-	@Autowired
-	@Qualifier("annotationDrivenTransactionManager")
-	CallCountingTransactionManager annotationDriven;
-
-
-	@Test
-	void transactionalTest() {
-		assertThat(primary.begun).isEqualTo(1);
-		assertThat(primary.inflight).isEqualTo(1);
-		assertThat(primary.commits).isEqualTo(0);
-		assertThat(primary.rollbacks).isEqualTo(0);
-
-		assertThat(annotationDriven.begun).isEqualTo(0);
-		assertThat(annotationDriven.inflight).isEqualTo(0);
-		assertThat(annotationDriven.commits).isEqualTo(0);
-		assertThat(annotationDriven.rollbacks).isEqualTo(0);
-	}
-
-	@AfterTransaction
-	void afterTransaction() {
-		assertThat(primary.begun).isEqualTo(1);
-		assertThat(primary.inflight).isEqualTo(0);
-		assertThat(primary.commits).isEqualTo(0);
-		assertThat(primary.rollbacks).isEqualTo(1);
-
-		assertThat(annotationDriven.begun).isEqualTo(0);
-		assertThat(annotationDriven.inflight).isEqualTo(0);
-		assertThat(annotationDriven.commits).isEqualTo(0);
-		assertThat(annotationDriven.rollbacks).isEqualTo(0);
-	}
+    @Autowired
+    @Qualifier("annotationDrivenTransactionManager")
+    CallCountingTransactionManager annotationDriven;
 
 
-	@Configuration
-	static class Config implements TransactionManagementConfigurer {
+    @Test
+    void transactionalTest() {
+        assertThat(primary.begun).isEqualTo(1);
+        assertThat(primary.inflight).isEqualTo(1);
+        assertThat(primary.commits).isEqualTo(0);
+        assertThat(primary.rollbacks).isEqualTo(0);
 
-		@Bean
-		@Primary
-		PlatformTransactionManager primary() {
-			return new CallCountingTransactionManager();
-		}
+        assertThat(annotationDriven.begun).isEqualTo(0);
+        assertThat(annotationDriven.inflight).isEqualTo(0);
+        assertThat(annotationDriven.commits).isEqualTo(0);
+        assertThat(annotationDriven.rollbacks).isEqualTo(0);
+    }
 
-		@Bean
-		@Override
-		public TransactionManager annotationDrivenTransactionManager() {
-			return new CallCountingTransactionManager();
-		}
+    @AfterTransaction
+    void afterTransaction() {
+        assertThat(primary.begun).isEqualTo(1);
+        assertThat(primary.inflight).isEqualTo(0);
+        assertThat(primary.commits).isEqualTo(0);
+        assertThat(primary.rollbacks).isEqualTo(1);
 
-	}
+        assertThat(annotationDriven.begun).isEqualTo(0);
+        assertThat(annotationDriven.inflight).isEqualTo(0);
+        assertThat(annotationDriven.commits).isEqualTo(0);
+        assertThat(annotationDriven.rollbacks).isEqualTo(0);
+    }
+
+
+    @Configuration
+    static class Config implements TransactionManagementConfigurer {
+
+        @Bean
+        @Primary
+        PlatformTransactionManager primary() {
+            return new CallCountingTransactionManager();
+        }
+
+        @Bean
+        @Override
+        public TransactionManager annotationDrivenTransactionManager() {
+            return new CallCountingTransactionManager();
+        }
+
+    }
 
 }

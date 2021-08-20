@@ -16,130 +16,130 @@
 
 package org.springframework.http.client.reactive;
 
-import java.net.URI;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.reactive.client.ContentChunk;
 import org.eclipse.jetty.reactive.client.ReactiveRequest;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.net.URI;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * {@link ClientHttpConnector} for the Jetty Reactive Streams HttpClient.
  *
  * @author Sebastien Deleuze
- * @since 5.1
  * @see <a href="https://github.com/jetty-project/jetty-reactive-httpclient">Jetty ReactiveStreams HttpClient</a>
+ * @since 5.1
  */
 public class JettyClientHttpConnector implements ClientHttpConnector {
 
-	private final HttpClient httpClient;
+    private final HttpClient httpClient;
 
-	private DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
-
-
-	/**
-	 * Default constructor that creates a new instance of {@link HttpClient}.
-	 */
-	public JettyClientHttpConnector() {
-		this(new HttpClient());
-	}
-
-	/**
-	 * Constructor with an initialized {@link HttpClient}.
-	 */
-	public JettyClientHttpConnector(HttpClient httpClient) {
-		this(httpClient, null);
-	}
-
-	/**
-	 * Constructor with an initialized {@link HttpClient} and configures it
-	 * with the given {@link JettyResourceFactory}.
-	 * @param httpClient the {@link HttpClient} to use
-	 * @param resourceFactory the {@link JettyResourceFactory} to use
-	 * @since 5.2
-	 */
-	public JettyClientHttpConnector(HttpClient httpClient, @Nullable JettyResourceFactory resourceFactory) {
-		Assert.notNull(httpClient, "HttpClient is required");
-		if (resourceFactory != null) {
-			httpClient.setExecutor(resourceFactory.getExecutor());
-			httpClient.setByteBufferPool(resourceFactory.getByteBufferPool());
-			httpClient.setScheduler(resourceFactory.getScheduler());
-		}
-		this.httpClient = httpClient;
-	}
-
-	/**
-	 * Constructor with an {@link JettyResourceFactory} that will manage shared resources.
-	 * @param resourceFactory the {@link JettyResourceFactory} to use
-	 * @param customizer the lambda used to customize the {@link HttpClient}
-	 * @deprecated as of 5.2, in favor of
-	 * {@link JettyClientHttpConnector#JettyClientHttpConnector(HttpClient, JettyResourceFactory)}
-	 */
-	@Deprecated
-	public JettyClientHttpConnector(JettyResourceFactory resourceFactory, @Nullable Consumer<HttpClient> customizer) {
-		this(new HttpClient(), resourceFactory);
-		if (customizer != null) {
-			customizer.accept(this.httpClient);
-		}
-	}
+    private DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
 
 
-	public void setBufferFactory(DataBufferFactory bufferFactory) {
-		this.bufferFactory = bufferFactory;
-	}
+    /**
+     * Default constructor that creates a new instance of {@link HttpClient}.
+     */
+    public JettyClientHttpConnector() {
+        this(new HttpClient());
+    }
+
+    /**
+     * Constructor with an initialized {@link HttpClient}.
+     */
+    public JettyClientHttpConnector(HttpClient httpClient) {
+        this(httpClient, null);
+    }
+
+    /**
+     * Constructor with an initialized {@link HttpClient} and configures it
+     * with the given {@link JettyResourceFactory}.
+     *
+     * @param httpClient      the {@link HttpClient} to use
+     * @param resourceFactory the {@link JettyResourceFactory} to use
+     * @since 5.2
+     */
+    public JettyClientHttpConnector(HttpClient httpClient, @Nullable JettyResourceFactory resourceFactory) {
+        Assert.notNull(httpClient, "HttpClient is required");
+        if (resourceFactory != null) {
+            httpClient.setExecutor(resourceFactory.getExecutor());
+            httpClient.setByteBufferPool(resourceFactory.getByteBufferPool());
+            httpClient.setScheduler(resourceFactory.getScheduler());
+        }
+        this.httpClient = httpClient;
+    }
+
+    /**
+     * Constructor with an {@link JettyResourceFactory} that will manage shared resources.
+     *
+     * @param resourceFactory the {@link JettyResourceFactory} to use
+     * @param customizer      the lambda used to customize the {@link HttpClient}
+     * @deprecated as of 5.2, in favor of
+     * {@link JettyClientHttpConnector#JettyClientHttpConnector(HttpClient, JettyResourceFactory)}
+     */
+    @Deprecated
+    public JettyClientHttpConnector(JettyResourceFactory resourceFactory, @Nullable Consumer<HttpClient> customizer) {
+        this(new HttpClient(), resourceFactory);
+        if (customizer != null) {
+            customizer.accept(this.httpClient);
+        }
+    }
 
 
-	@Override
-	public Mono<ClientHttpResponse> connect(HttpMethod method, URI uri,
-			Function<? super ClientHttpRequest, Mono<Void>> requestCallback) {
+    public void setBufferFactory(DataBufferFactory bufferFactory) {
+        this.bufferFactory = bufferFactory;
+    }
 
-		if (!uri.isAbsolute()) {
-			return Mono.error(new IllegalArgumentException("URI is not absolute: " + uri));
-		}
 
-		if (!this.httpClient.isStarted()) {
-			try {
-				this.httpClient.start();
-			}
-			catch (Exception ex) {
-				return Mono.error(ex);
-			}
-		}
+    @Override
+    public Mono<ClientHttpResponse> connect(HttpMethod method, URI uri,
+                                            Function<? super ClientHttpRequest, Mono<Void>> requestCallback) {
 
-		Request request = this.httpClient.newRequest(uri).method(method.toString());
+        if (!uri.isAbsolute()) {
+            return Mono.error(new IllegalArgumentException("URI is not absolute: " + uri));
+        }
 
-		return requestCallback.apply(new JettyClientHttpRequest(request, this.bufferFactory))
-				.then(Mono.fromDirect(ReactiveRequest.newBuilder(request).build()
-						.response((reactiveResponse, chunkPublisher) -> {
-							Flux<DataBuffer> content = Flux.from(chunkPublisher).map(this::toDataBuffer);
-							return Mono.just(new JettyClientHttpResponse(reactiveResponse, content));
-						})));
-	}
+        if (!this.httpClient.isStarted()) {
+            try {
+                this.httpClient.start();
+            } catch (Exception ex) {
+                return Mono.error(ex);
+            }
+        }
 
-	private DataBuffer toDataBuffer(ContentChunk chunk) {
+        Request request = this.httpClient.newRequest(uri).method(method.toString());
 
-		// We must copy until this is resolved:
-		// https://github.com/eclipse/jetty.project/issues/2429
+        return requestCallback.apply(new JettyClientHttpRequest(request, this.bufferFactory))
+                .then(Mono.fromDirect(ReactiveRequest.newBuilder(request).build()
+                        .response((reactiveResponse, chunkPublisher) -> {
+                            Flux<DataBuffer> content = Flux.from(chunkPublisher).map(this::toDataBuffer);
+                            return Mono.just(new JettyClientHttpResponse(reactiveResponse, content));
+                        })));
+    }
 
-		// Use copy instead of buffer wrapping because Callback#succeeded() is
-		// used not only to release the buffer but also to request more data
-		// which is a problem for codecs that buffer data.
+    private DataBuffer toDataBuffer(ContentChunk chunk) {
 
-		DataBuffer buffer = this.bufferFactory.allocateBuffer(chunk.buffer.capacity());
-		buffer.write(chunk.buffer);
-		chunk.callback.succeeded();
-		return buffer;
-	}
+        // We must copy until this is resolved:
+        // https://github.com/eclipse/jetty.project/issues/2429
+
+        // Use copy instead of buffer wrapping because Callback#succeeded() is
+        // used not only to release the buffer but also to request more data
+        // which is a problem for codecs that buffer data.
+
+        DataBuffer buffer = this.bufferFactory.allocateBuffer(chunk.buffer.capacity());
+        buffer.write(chunk.buffer);
+        chunk.callback.succeeded();
+        return buffer;
+    }
 
 }

@@ -16,9 +16,9 @@
 
 package org.springframework.web.accept;
 
-import java.util.List;
-
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 /**
  * Strategy to resolve a {@link MediaType} to a list of file extensions &mdash;
@@ -29,17 +29,19 @@ import org.springframework.http.MediaType;
  */
 public interface MediaTypeFileExtensionResolver {
 
-	/**
-	 * Resolve the given media type to a list of file extensions.
-	 * @param mediaType the media type to resolve
-	 * @return a list of extensions or an empty list (never {@code null})
-	 */
-	List<String> resolveFileExtensions(MediaType mediaType);
+    /**
+     * Resolve the given media type to a list of file extensions.
+     *
+     * @param mediaType the media type to resolve
+     * @return a list of extensions or an empty list (never {@code null})
+     */
+    List<String> resolveFileExtensions(MediaType mediaType);
 
-	/**
-	 * Get all registered file extensions.
-	 * @return a list of extensions or an empty list (never {@code null})
-	 */
-	List<String> getAllFileExtensions();
+    /**
+     * Get all registered file extensions.
+     *
+     * @return a list of extensions or an empty list (never {@code null})
+     */
+    List<String> getAllFileExtensions();
 
 }

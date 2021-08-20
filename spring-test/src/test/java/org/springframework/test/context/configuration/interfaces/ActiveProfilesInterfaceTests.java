@@ -18,7 +18,6 @@ package org.springframework.test.context.configuration.interfaces;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.testfixture.beans.Employee;
 import org.springframework.context.annotation.Bean;
@@ -35,31 +34,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 class ActiveProfilesInterfaceTests implements ActiveProfilesTestInterface {
 
-	@Autowired
-	Employee employee;
+    @Autowired
+    Employee employee;
 
 
-	@Test
-	void profileFromTestInterface() {
-		assertThat(employee).isNotNull();
-		assertThat(employee.getName()).isEqualTo("dev");
-	}
+    @Test
+    void profileFromTestInterface() {
+        assertThat(employee).isNotNull();
+        assertThat(employee.getName()).isEqualTo("dev");
+    }
 
 
-	@Configuration
-	static class Config {
+    @Configuration
+    static class Config {
 
-		@Bean
-		@Profile("dev")
-		Employee employee1() {
-			return new Employee("dev");
-		}
+        @Bean
+        @Profile("dev")
+        Employee employee1() {
+            return new Employee("dev");
+        }
 
-		@Bean
-		@Profile("prod")
-		Employee employee2() {
-			return new Employee("prod");
-		}
-	}
+        @Bean
+        @Profile("prod")
+        Employee employee2() {
+            return new Employee("prod");
+        }
+    }
 
 }

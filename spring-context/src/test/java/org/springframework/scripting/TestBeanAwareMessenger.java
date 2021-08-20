@@ -23,8 +23,8 @@ import org.springframework.beans.testfixture.beans.TestBean;
  */
 public interface TestBeanAwareMessenger extends ConfigurableMessenger {
 
-	TestBean getTestBean();
+    TestBean getTestBean();
 
-	void setTestBean(TestBean testBean);
+    void setTestBean(TestBean testBean);
 
 }

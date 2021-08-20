@@ -25,8 +25,8 @@ import org.springframework.context.ApplicationContext;
  */
 public interface ContextScriptBean extends ScriptBean {
 
-	TestBean getTestBean();
+    TestBean getTestBean();
 
-	ApplicationContext getApplicationContext();
+    ApplicationContext getApplicationContext();
 
 }

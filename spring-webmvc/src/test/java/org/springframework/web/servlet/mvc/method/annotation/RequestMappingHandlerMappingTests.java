@@ -16,40 +16,27 @@
 
 package org.springframework.web.servlet.mvc.method.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.accept.PathExtensionContentNegotiationStrategy;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.support.StaticWebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -62,261 +49,260 @@ import static org.mockito.Mockito.mock;
  */
 public class RequestMappingHandlerMappingTests {
 
-	private final StaticWebApplicationContext wac = new StaticWebApplicationContext();
-
-	private final RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
-	{
-		this.handlerMapping.setApplicationContext(wac);
-	}
-
-
-	@Test
-	public void useRegisteredSuffixPatternMatch() {
-		assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
-		assertThat(this.handlerMapping.useRegisteredSuffixPatternMatch()).isFalse();
+    private final StaticWebApplicationContext wac = new StaticWebApplicationContext();
+
+    private final RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
+
+    {
+        this.handlerMapping.setApplicationContext(wac);
+    }
 
-		Map<String, MediaType> fileExtensions = Collections.singletonMap("json", MediaType.APPLICATION_JSON);
-		PathExtensionContentNegotiationStrategy strategy = new PathExtensionContentNegotiationStrategy(fileExtensions);
-		ContentNegotiationManager manager = new ContentNegotiationManager(strategy);
 
-		this.handlerMapping.setContentNegotiationManager(manager);
-		this.handlerMapping.setUseRegisteredSuffixPatternMatch(true);
-		this.handlerMapping.afterPropertiesSet();
-
-		assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
-		assertThat(this.handlerMapping.useRegisteredSuffixPatternMatch()).isTrue();
-		assertThat(this.handlerMapping.getFileExtensions()).isEqualTo(Arrays.asList("json"));
-	}
-
-	@Test
-	public void useRegisteredSuffixPatternMatchInitialization() {
-		Map<String, MediaType> fileExtensions = Collections.singletonMap("json", MediaType.APPLICATION_JSON);
-		PathExtensionContentNegotiationStrategy strategy = new PathExtensionContentNegotiationStrategy(fileExtensions);
-		ContentNegotiationManager manager = new ContentNegotiationManager(strategy);
-
-		final Set<String> extensions = new HashSet<>();
-
-		RequestMappingHandlerMapping hm = new RequestMappingHandlerMapping() {
-			@Override
-			protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
-				extensions.addAll(getFileExtensions());
-				return super.getMappingForMethod(method, handlerType);
-			}
-		};
-
-		wac.registerSingleton("testController", ComposedAnnotationController.class);
-		wac.refresh();
-
-		hm.setContentNegotiationManager(manager);
-		hm.setUseRegisteredSuffixPatternMatch(true);
-		hm.setApplicationContext(wac);
-		hm.afterPropertiesSet();
-
-		assertThat(extensions).isEqualTo(Collections.singleton("json"));
-	}
-
-	@Test
-	public void useSuffixPatternMatch() {
-		assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
-
-		this.handlerMapping.setUseSuffixPatternMatch(false);
-		assertThat(this.handlerMapping.useSuffixPatternMatch()).isFalse();
-
-		this.handlerMapping.setUseRegisteredSuffixPatternMatch(false);
-		assertThat(this.handlerMapping.useSuffixPatternMatch())
-				.as("'false' registeredSuffixPatternMatch shouldn't impact suffixPatternMatch").isFalse();
-
-		this.handlerMapping.setUseRegisteredSuffixPatternMatch(true);
-		assertThat(this.handlerMapping.useSuffixPatternMatch())
-				.as("'true' registeredSuffixPatternMatch should enable suffixPatternMatch").isTrue();
-	}
-
-	@Test
-	public void resolveEmbeddedValuesInPatterns() {
-		this.handlerMapping.setEmbeddedValueResolver(
-				value -> "/${pattern}/bar".equals(value) ? "/foo/bar" : value
-		);
-
-		String[] patterns = new String[] { "/foo", "/${pattern}/bar" };
-		String[] result = this.handlerMapping.resolveEmbeddedValuesInPatterns(patterns);
-
-		assertThat(result).isEqualTo(new String[] { "/foo", "/foo/bar" });
-	}
-
-	@Test
-	public void pathPrefix() throws NoSuchMethodException {
-		this.handlerMapping.setEmbeddedValueResolver(value -> "/${prefix}".equals(value) ? "/api" : value);
-		this.handlerMapping.setPathPrefixes(Collections.singletonMap(
-				"/${prefix}", HandlerTypePredicate.forAnnotation(RestController.class)));
-
-		Method method = UserController.class.getMethod("getUser");
-		RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, UserController.class);
-
-		assertThat(info).isNotNull();
-		assertThat(info.getPatternsCondition().getPatterns()).isEqualTo(Collections.singleton("/api/user/{id}"));
-	}
-
-	@Test // gh-23907
-	public void pathPrefixPreservesPathMatchingSettings() throws NoSuchMethodException {
-		this.handlerMapping.setUseSuffixPatternMatch(false);
-		this.handlerMapping.setPathPrefixes(Collections.singletonMap("/api", HandlerTypePredicate.forAnyHandlerType()));
-		this.handlerMapping.afterPropertiesSet();
-
-		Method method = ComposedAnnotationController.class.getMethod("get");
-		RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, ComposedAnnotationController.class);
-
-		assertThat(info).isNotNull();
+    @Test
+    public void useRegisteredSuffixPatternMatch() {
+        assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
+        assertThat(this.handlerMapping.useRegisteredSuffixPatternMatch()).isFalse();
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/get");
-		assertThat(info.getPatternsCondition().getMatchingCondition(request)).isNotNull();
-
-		request = new MockHttpServletRequest("GET", "/api/get.pdf");
-		assertThat(info.getPatternsCondition().getMatchingCondition(request)).isNull();
-	}
-
-	@Test
-	public void resolveRequestMappingViaComposedAnnotation() throws Exception {
-		RequestMappingInfo info = assertComposedAnnotationMapping("postJson", "/postJson", RequestMethod.POST);
-
-		assertThat(info.getConsumesCondition().getConsumableMediaTypes().iterator().next().toString())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-		assertThat(info.getProducesCondition().getProducibleMediaTypes().iterator().next().toString())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-	}
-
-	@Test // SPR-14988
-	public void getMappingOverridesConsumesFromTypeLevelAnnotation() throws Exception {
-		RequestMappingInfo requestMappingInfo = assertComposedAnnotationMapping(RequestMethod.POST);
-
-		ConsumesRequestCondition condition = requestMappingInfo.getConsumesCondition();
-		assertThat(condition.getConsumableMediaTypes()).isEqualTo(Collections.singleton(MediaType.APPLICATION_XML));
-	}
-
-	@Test // gh-22010
-	public void consumesWithOptionalRequestBody() {
-		this.wac.registerSingleton("testController", ComposedAnnotationController.class);
-		this.wac.refresh();
-		this.handlerMapping.afterPropertiesSet();
-		RequestMappingInfo info = this.handlerMapping.getHandlerMethods().keySet().stream()
-				.filter(i -> i.getPatternsCondition().getPatterns().equals(Collections.singleton("/post")))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("No /post"));
+        Map<String, MediaType> fileExtensions = Collections.singletonMap("json", MediaType.APPLICATION_JSON);
+        PathExtensionContentNegotiationStrategy strategy = new PathExtensionContentNegotiationStrategy(fileExtensions);
+        ContentNegotiationManager manager = new ContentNegotiationManager(strategy);
 
-		assertThat(info.getConsumesCondition().isBodyRequired()).isFalse();
-	}
+        this.handlerMapping.setContentNegotiationManager(manager);
+        this.handlerMapping.setUseRegisteredSuffixPatternMatch(true);
+        this.handlerMapping.afterPropertiesSet();
+
+        assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
+        assertThat(this.handlerMapping.useRegisteredSuffixPatternMatch()).isTrue();
+        assertThat(this.handlerMapping.getFileExtensions()).isEqualTo(Arrays.asList("json"));
+    }
+
+    @Test
+    public void useRegisteredSuffixPatternMatchInitialization() {
+        Map<String, MediaType> fileExtensions = Collections.singletonMap("json", MediaType.APPLICATION_JSON);
+        PathExtensionContentNegotiationStrategy strategy = new PathExtensionContentNegotiationStrategy(fileExtensions);
+        ContentNegotiationManager manager = new ContentNegotiationManager(strategy);
 
-	@Test
-	public void getMapping() throws Exception {
-		assertComposedAnnotationMapping(RequestMethod.GET);
-	}
+        final Set<String> extensions = new HashSet<>();
+
+        RequestMappingHandlerMapping hm = new RequestMappingHandlerMapping() {
+            @Override
+            protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+                extensions.addAll(getFileExtensions());
+                return super.getMappingForMethod(method, handlerType);
+            }
+        };
+
+        wac.registerSingleton("testController", ComposedAnnotationController.class);
+        wac.refresh();
+
+        hm.setContentNegotiationManager(manager);
+        hm.setUseRegisteredSuffixPatternMatch(true);
+        hm.setApplicationContext(wac);
+        hm.afterPropertiesSet();
+
+        assertThat(extensions).isEqualTo(Collections.singleton("json"));
+    }
+
+    @Test
+    public void useSuffixPatternMatch() {
+        assertThat(this.handlerMapping.useSuffixPatternMatch()).isTrue();
+
+        this.handlerMapping.setUseSuffixPatternMatch(false);
+        assertThat(this.handlerMapping.useSuffixPatternMatch()).isFalse();
+
+        this.handlerMapping.setUseRegisteredSuffixPatternMatch(false);
+        assertThat(this.handlerMapping.useSuffixPatternMatch())
+                .as("'false' registeredSuffixPatternMatch shouldn't impact suffixPatternMatch").isFalse();
+
+        this.handlerMapping.setUseRegisteredSuffixPatternMatch(true);
+        assertThat(this.handlerMapping.useSuffixPatternMatch())
+                .as("'true' registeredSuffixPatternMatch should enable suffixPatternMatch").isTrue();
+    }
+
+    @Test
+    public void resolveEmbeddedValuesInPatterns() {
+        this.handlerMapping.setEmbeddedValueResolver(
+                value -> "/${pattern}/bar".equals(value) ? "/foo/bar" : value
+        );
+
+        String[] patterns = new String[]{"/foo", "/${pattern}/bar"};
+        String[] result = this.handlerMapping.resolveEmbeddedValuesInPatterns(patterns);
+
+        assertThat(result).isEqualTo(new String[]{"/foo", "/foo/bar"});
+    }
+
+    @Test
+    public void pathPrefix() throws NoSuchMethodException {
+        this.handlerMapping.setEmbeddedValueResolver(value -> "/${prefix}".equals(value) ? "/api" : value);
+        this.handlerMapping.setPathPrefixes(Collections.singletonMap(
+                "/${prefix}", HandlerTypePredicate.forAnnotation(RestController.class)));
+
+        Method method = UserController.class.getMethod("getUser");
+        RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, UserController.class);
+
+        assertThat(info).isNotNull();
+        assertThat(info.getPatternsCondition().getPatterns()).isEqualTo(Collections.singleton("/api/user/{id}"));
+    }
+
+    @Test // gh-23907
+    public void pathPrefixPreservesPathMatchingSettings() throws NoSuchMethodException {
+        this.handlerMapping.setUseSuffixPatternMatch(false);
+        this.handlerMapping.setPathPrefixes(Collections.singletonMap("/api", HandlerTypePredicate.forAnyHandlerType()));
+        this.handlerMapping.afterPropertiesSet();
+
+        Method method = ComposedAnnotationController.class.getMethod("get");
+        RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, ComposedAnnotationController.class);
+
+        assertThat(info).isNotNull();
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/get");
+        assertThat(info.getPatternsCondition().getMatchingCondition(request)).isNotNull();
 
-	@Test
-	public void postMapping() throws Exception {
-		assertComposedAnnotationMapping(RequestMethod.POST);
-	}
+        request = new MockHttpServletRequest("GET", "/api/get.pdf");
+        assertThat(info.getPatternsCondition().getMatchingCondition(request)).isNull();
+    }
 
-	@Test
-	public void putMapping() throws Exception {
-		assertComposedAnnotationMapping(RequestMethod.PUT);
-	}
+    @Test
+    public void resolveRequestMappingViaComposedAnnotation() throws Exception {
+        RequestMappingInfo info = assertComposedAnnotationMapping("postJson", "/postJson", RequestMethod.POST);
 
-	@Test
-	public void deleteMapping() throws Exception {
-		assertComposedAnnotationMapping(RequestMethod.DELETE);
-	}
+        assertThat(info.getConsumesCondition().getConsumableMediaTypes().iterator().next().toString())
+                .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+        assertThat(info.getProducesCondition().getProducibleMediaTypes().iterator().next().toString())
+                .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+    }
+
+    @Test // SPR-14988
+    public void getMappingOverridesConsumesFromTypeLevelAnnotation() throws Exception {
+        RequestMappingInfo requestMappingInfo = assertComposedAnnotationMapping(RequestMethod.POST);
+
+        ConsumesRequestCondition condition = requestMappingInfo.getConsumesCondition();
+        assertThat(condition.getConsumableMediaTypes()).isEqualTo(Collections.singleton(MediaType.APPLICATION_XML));
+    }
+
+    @Test // gh-22010
+    public void consumesWithOptionalRequestBody() {
+        this.wac.registerSingleton("testController", ComposedAnnotationController.class);
+        this.wac.refresh();
+        this.handlerMapping.afterPropertiesSet();
+        RequestMappingInfo info = this.handlerMapping.getHandlerMethods().keySet().stream()
+                .filter(i -> i.getPatternsCondition().getPatterns().equals(Collections.singleton("/post")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No /post"));
 
-	@Test
-	public void patchMapping() throws Exception {
-		assertComposedAnnotationMapping(RequestMethod.PATCH);
-	}
+        assertThat(info.getConsumesCondition().isBodyRequired()).isFalse();
+    }
 
-	private RequestMappingInfo assertComposedAnnotationMapping(RequestMethod requestMethod) throws Exception {
-		String methodName = requestMethod.name().toLowerCase();
-		String path = "/" + methodName;
+    @Test
+    public void getMapping() throws Exception {
+        assertComposedAnnotationMapping(RequestMethod.GET);
+    }
 
-		return assertComposedAnnotationMapping(methodName, path, requestMethod);
-	}
+    @Test
+    public void postMapping() throws Exception {
+        assertComposedAnnotationMapping(RequestMethod.POST);
+    }
 
-	private RequestMappingInfo assertComposedAnnotationMapping(String methodName, String path,
-			RequestMethod requestMethod) throws Exception {
+    @Test
+    public void putMapping() throws Exception {
+        assertComposedAnnotationMapping(RequestMethod.PUT);
+    }
 
-		Class<?> clazz = ComposedAnnotationController.class;
-		Method method = ClassUtils.getMethod(clazz, methodName, (Class<?>[]) null);
-		RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, clazz);
+    @Test
+    public void deleteMapping() throws Exception {
+        assertComposedAnnotationMapping(RequestMethod.DELETE);
+    }
 
-		assertThat(info).isNotNull();
+    @Test
+    public void patchMapping() throws Exception {
+        assertComposedAnnotationMapping(RequestMethod.PATCH);
+    }
 
-		Set<String> paths = info.getPatternsCondition().getPatterns();
-		assertThat(paths.size()).isEqualTo(1);
-		assertThat(paths.iterator().next()).isEqualTo(path);
+    private RequestMappingInfo assertComposedAnnotationMapping(RequestMethod requestMethod) throws Exception {
+        String methodName = requestMethod.name().toLowerCase();
+        String path = "/" + methodName;
 
-		Set<RequestMethod> methods = info.getMethodsCondition().getMethods();
-		assertThat(methods.size()).isEqualTo(1);
-		assertThat(methods.iterator().next()).isEqualTo(requestMethod);
+        return assertComposedAnnotationMapping(methodName, path, requestMethod);
+    }
 
-		return info;
-	}
+    private RequestMappingInfo assertComposedAnnotationMapping(String methodName, String path,
+                                                               RequestMethod requestMethod) throws Exception {
 
+        Class<?> clazz = ComposedAnnotationController.class;
+        Method method = ClassUtils.getMethod(clazz, methodName, (Class<?>[]) null);
+        RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, clazz);
 
-	@Controller
-	@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-	static class ComposedAnnotationController {
+        assertThat(info).isNotNull();
 
-		@RequestMapping
-		public void handle() {
-		}
+        Set<String> paths = info.getPatternsCondition().getPatterns();
+        assertThat(paths.size()).isEqualTo(1);
+        assertThat(paths.iterator().next()).isEqualTo(path);
 
-		@PostJson("/postJson")
-		public void postJson() {
-		}
+        Set<RequestMethod> methods = info.getMethodsCondition().getMethods();
+        assertThat(methods.size()).isEqualTo(1);
+        assertThat(methods.iterator().next()).isEqualTo(requestMethod);
 
-		@GetMapping("/get")
-		public void get() {
-		}
+        return info;
+    }
 
-		@PostMapping(path = "/post", consumes = MediaType.APPLICATION_XML_VALUE)
-		public void post(@RequestBody(required = false) Foo foo) {
-		}
 
-		@PutMapping("/put")
-		public void put() {
-		}
+    @RequestMapping(method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface PostJson {
 
-		@DeleteMapping("/delete")
-		public void delete() {
-		}
+        @AliasFor(annotation = RequestMapping.class)
+        String[] value() default {};
+    }
 
-		@PatchMapping("/patch")
-		public void patch() {
-		}
+    @Controller
+    @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    static class ComposedAnnotationController {
 
-	}
+        @RequestMapping
+        public void handle() {
+        }
 
+        @PostJson("/postJson")
+        public void postJson() {
+        }
 
-	@RequestMapping(method = RequestMethod.POST,
-			produces = MediaType.APPLICATION_JSON_VALUE,
-			consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Target(ElementType.METHOD)
-	@Retention(RetentionPolicy.RUNTIME)
-	@interface PostJson {
+        @GetMapping("/get")
+        public void get() {
+        }
 
-		@AliasFor(annotation = RequestMapping.class)
-		String[] value() default {};
-	}
+        @PostMapping(path = "/post", consumes = MediaType.APPLICATION_XML_VALUE)
+        public void post(@RequestBody(required = false) Foo foo) {
+        }
 
+        @PutMapping("/put")
+        public void put() {
+        }
 
-	@RestController
-	@RequestMapping("/user")
-	static class UserController {
+        @DeleteMapping("/delete")
+        public void delete() {
+        }
 
-		@GetMapping("/{id}")
-		public Principal getUser() {
-			return mock(Principal.class);
-		}
-	}
+        @PatchMapping("/patch")
+        public void patch() {
+        }
 
+    }
 
-	private static class Foo {
-	}
+    @RestController
+    @RequestMapping("/user")
+    static class UserController {
+
+        @GetMapping("/{id}")
+        public Principal getUser() {
+            return mock(Principal.class);
+        }
+    }
+
+
+    private static class Foo {
+    }
 
 }

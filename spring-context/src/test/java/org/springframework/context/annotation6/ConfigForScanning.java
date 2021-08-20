@@ -22,8 +22,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ConfigForScanning {
-	@Bean
-	public TestBean testBean() {
-		return new TestBean();
-	}
+    @Bean
+    public TestBean testBean() {
+        return new TestBean();
+    }
 }

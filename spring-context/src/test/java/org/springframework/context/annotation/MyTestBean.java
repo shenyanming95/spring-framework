@@ -22,9 +22,9 @@ package org.springframework.context.annotation;
 @Configuration
 class MyTestBean {
 
-	@Bean
-	public org.springframework.beans.testfixture.beans.TestBean myTestBean() {
-		return new org.springframework.beans.testfixture.beans.TestBean();
-	}
+    @Bean
+    public org.springframework.beans.testfixture.beans.TestBean myTestBean() {
+        return new org.springframework.beans.testfixture.beans.TestBean();
+    }
 
 }

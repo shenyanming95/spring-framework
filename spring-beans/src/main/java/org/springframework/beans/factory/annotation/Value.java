@@ -16,11 +16,7 @@
 
 package org.springframework.beans.factory.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Annotation used at the field or method/constructor parameter level
@@ -46,21 +42,21 @@ import java.lang.annotation.Target;
  * class (which, by default, checks for the presence of this annotation).
  *
  * @author Juergen Hoeller
- * @since 3.0
  * @see AutowiredAnnotationBeanPostProcessor
  * @see Autowired
  * @see org.springframework.beans.factory.config.BeanExpressionResolver
  * @see org.springframework.beans.factory.support.AutowireCandidateResolver#getSuggestedValue
+ * @since 3.0
  */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Value {
 
-	/**
-	 * The actual value expression such as <code>#{systemProperties.myProp}</code>
-	 * or property placeholder such as <code>${my.app.myProp}</code>.
-	 */
-	String value();
+    /**
+     * The actual value expression such as <code>#{systemProperties.myProp}</code>
+     * or property placeholder such as <code>${my.app.myProp}</code>.
+     */
+    String value();
 
 }

@@ -17,7 +17,6 @@
 package org.springframework.test.context.transaction.manager;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,27 +36,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringJUnitConfig
 class LookUpTxMgrNonTransactionalTests {
 
-	@Autowired
-	CallCountingTransactionManager txManager;
+    @Autowired
+    CallCountingTransactionManager txManager;
 
 
-	@Test
-	void nonTransactionalTest() {
-		assertThat(txManager.begun).isEqualTo(0);
-		assertThat(txManager.inflight).isEqualTo(0);
-		assertThat(txManager.commits).isEqualTo(0);
-		assertThat(txManager.rollbacks).isEqualTo(0);
-	}
+    @Test
+    void nonTransactionalTest() {
+        assertThat(txManager.begun).isEqualTo(0);
+        assertThat(txManager.inflight).isEqualTo(0);
+        assertThat(txManager.commits).isEqualTo(0);
+        assertThat(txManager.rollbacks).isEqualTo(0);
+    }
 
 
-	@Configuration
-	static class Config {
+    @Configuration
+    static class Config {
 
-		@Bean
-		PlatformTransactionManager transactionManager() {
-			return new CallCountingTransactionManager();
-		}
+        @Bean
+        PlatformTransactionManager transactionManager() {
+            return new CallCountingTransactionManager();
+        }
 
-	}
+    }
 
 }

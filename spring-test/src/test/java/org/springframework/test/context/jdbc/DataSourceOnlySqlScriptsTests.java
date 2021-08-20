@@ -16,13 +16,10 @@
 
 package org.springframework.test.context.jdbc;
 
-import javax.sql.DataSource;
-
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +28,8 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+
+import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.transaction.TransactionAssert.assertThatTransaction;
@@ -44,48 +43,48 @@ import static org.springframework.test.transaction.TransactionAssert.assertThatT
  */
 @SpringJUnitConfig
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Sql({ "schema.sql", "data.sql" })
+@Sql({"schema.sql", "data.sql"})
 @DirtiesContext
 class DataSourceOnlySqlScriptsTests {
 
-	private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
 
-	@Autowired
-	void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
-	}
+    @Autowired
+    void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
 
-	@Test
-	@Order(1)
-	void classLevelScripts() {
-		assertThatTransaction().isNotActive();
-		assertNumUsers(1);
-	}
+    @Test
+    @Order(1)
+    void classLevelScripts() {
+        assertThatTransaction().isNotActive();
+        assertNumUsers(1);
+    }
 
-	@Test
-	@Sql({ "drop-schema.sql", "schema.sql", "data.sql", "data-add-dogbert.sql" })
-	@Order(2)
-	void methodLevelScripts() {
-		assertThatTransaction().isNotActive();
-		assertNumUsers(2);
-	}
+    @Test
+    @Sql({"drop-schema.sql", "schema.sql", "data.sql", "data-add-dogbert.sql"})
+    @Order(2)
+    void methodLevelScripts() {
+        assertThatTransaction().isNotActive();
+        assertNumUsers(2);
+    }
 
-	protected void assertNumUsers(int expected) {
-		assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "user")).as(
-			"Number of rows in the 'user' table.").isEqualTo(expected);
-	}
+    protected void assertNumUsers(int expected) {
+        assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "user")).as(
+                "Number of rows in the 'user' table.").isEqualTo(expected);
+    }
 
 
-	@Configuration
-	static class Config {
+    @Configuration
+    static class Config {
 
-		@Bean
-		DataSource dataSource() {
-			return new EmbeddedDatabaseBuilder()//
-					.setName("empty-sql-scripts-without-tx-mgr-test-db")//
-					.build();
-		}
-	}
+        @Bean
+        DataSource dataSource() {
+            return new EmbeddedDatabaseBuilder()//
+                    .setName("empty-sql-scripts-without-tx-mgr-test-db")//
+                    .build();
+        }
+    }
 
 }

@@ -16,9 +16,8 @@
 
 package org.springframework.test.context.testng;
 
-import org.testng.annotations.Test;
-
 import org.springframework.test.context.ContextConfiguration;
+import org.testng.annotations.Test;
 
 import static org.springframework.test.transaction.TransactionAssert.assertThatTransaction;
 
@@ -34,15 +33,15 @@ import static org.springframework.test.transaction.TransactionAssert.assertThatT
 @ContextConfiguration
 public class TimedTransactionalTestNGSpringContextTests extends AbstractTransactionalTestNGSpringContextTests {
 
-	@Test
-	public void testWithoutTimeout() {
-		assertThatTransaction().isActive();
-	}
+    @Test
+    public void testWithoutTimeout() {
+        assertThatTransaction().isActive();
+    }
 
-	// TODO Enable TestNG test with timeout once we have a solution.
-	@Test(timeOut = 10000, enabled = false)
-	public void testWithTimeout() {
-		assertThatTransaction().isActive();
-	}
+    // TODO Enable TestNG test with timeout once we have a solution.
+    @Test(timeOut = 10000, enabled = false)
+    public void testWithTimeout() {
+        assertThatTransaction().isActive();
+    }
 
 }

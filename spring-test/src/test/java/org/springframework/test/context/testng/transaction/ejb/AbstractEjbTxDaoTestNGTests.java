@@ -16,17 +16,16 @@
 
 package org.springframework.test.context.testng.transaction.ejb;
 
-import javax.ejb.EJB;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
-
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.ejb.dao.TestEntityDao;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
+
+import javax.ejb.EJB;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,44 +40,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class AbstractEjbTxDaoTestNGTests extends AbstractTransactionalTestNGSpringContextTests {
 
-	protected static final String TEST_NAME = "test-name";
+    protected static final String TEST_NAME = "test-name";
 
-	@EJB
-	protected TestEntityDao dao;
+    @EJB
+    protected TestEntityDao dao;
 
-	@PersistenceContext
-	protected EntityManager em;
+    @PersistenceContext
+    protected EntityManager em;
 
 
-	@Test
-	public void test1InitialState() {
-		int count = dao.getCount(TEST_NAME);
-		assertThat(count).as("New TestEntity should have count=0.").isEqualTo(0);
-	}
+    @Test
+    public void test1InitialState() {
+        int count = dao.getCount(TEST_NAME);
+        assertThat(count).as("New TestEntity should have count=0.").isEqualTo(0);
+    }
 
-	@Test(dependsOnMethods = "test1InitialState")
-	public void test2IncrementCount1() {
-		int count = dao.incrementCount(TEST_NAME);
-		assertThat(count).as("Expected count=1 after first increment.").isEqualTo(1);
-	}
+    @Test(dependsOnMethods = "test1InitialState")
+    public void test2IncrementCount1() {
+        int count = dao.incrementCount(TEST_NAME);
+        assertThat(count).as("Expected count=1 after first increment.").isEqualTo(1);
+    }
 
-	/**
-	 * The default implementation of this method assumes that the transaction
-	 * for {@link #test2IncrementCount1()} was committed. Therefore, it is
-	 * expected that the previous increment has been persisted in the database.
-	 */
-	@Test(dependsOnMethods = "test2IncrementCount1")
-	public void test3IncrementCount2() {
-		int count = dao.getCount(TEST_NAME);
-		assertThat(count).as("Expected count=1 after test2IncrementCount1().").isEqualTo(1);
+    /**
+     * The default implementation of this method assumes that the transaction
+     * for {@link #test2IncrementCount1()} was committed. Therefore, it is
+     * expected that the previous increment has been persisted in the database.
+     */
+    @Test(dependsOnMethods = "test2IncrementCount1")
+    public void test3IncrementCount2() {
+        int count = dao.getCount(TEST_NAME);
+        assertThat(count).as("Expected count=1 after test2IncrementCount1().").isEqualTo(1);
 
-		count = dao.incrementCount(TEST_NAME);
-		assertThat(count).as("Expected count=2 now.").isEqualTo(2);
-	}
+        count = dao.incrementCount(TEST_NAME);
+        assertThat(count).as("Expected count=2 now.").isEqualTo(2);
+    }
 
-	@AfterMethod(alwaysRun = true)
-	public void synchronizePersistenceContext() {
-		em.flush();
-	}
+    @AfterMethod(alwaysRun = true)
+    public void synchronizePersistenceContext() {
+        em.flush();
+    }
 
 }

@@ -34,31 +34,31 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 @SpringJUnitConfig
 class KotlinDynamicPropertySourceIntegrationTests {
 
-	@Test
-	fun hasInjectedValues(@Autowired service: Service) {
-		Assertions.assertThat(service.ip).isEqualTo("127.0.0.1")
-		Assertions.assertThat(service.port).isEqualTo(4242)
-	}
+    @Test
+    fun hasInjectedValues(@Autowired service: Service) {
+        Assertions.assertThat(service.ip).isEqualTo("127.0.0.1")
+        Assertions.assertThat(service.port).isEqualTo(4242)
+    }
 
-	@Configuration
-	@Import(Service::class)
-	open class Config
+    @Configuration
+    @Import(Service::class)
+    open class Config
 
-	@Component
-	class Service(@Value("\${test.container.ip}") val ip: String, @Value("\${test.container.port}") val port: Int)
+    @Component
+    class Service(@Value("\${test.container.ip}") val ip: String, @Value("\${test.container.port}") val port: Int)
 
-	class DemoContainer(val ipAddress: String = "127.0.0.1", val port: Int = 4242)
+    class DemoContainer(val ipAddress: String = "127.0.0.1", val port: Int = 4242)
 
-	companion object {
+    companion object {
 
-		@JvmStatic
-		val container = DemoContainer()
+        @JvmStatic
+        val container = DemoContainer()
 
-		@DynamicPropertySource
-		@JvmStatic
-		fun containerProperties(registry: DynamicPropertyRegistry) {
-			registry.add("test.container.ip") { container.ipAddress }
-			registry.add("test.container.port") { container.port }
-		}
-	}
+        @DynamicPropertySource
+        @JvmStatic
+        fun containerProperties(registry: DynamicPropertyRegistry) {
+            registry.add("test.container.ip") { container.ipAddress }
+            registry.add("test.container.port") { container.port }
+        }
+    }
 }

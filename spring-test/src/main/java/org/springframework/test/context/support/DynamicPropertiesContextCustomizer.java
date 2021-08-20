@@ -16,14 +16,6 @@
 
 package org.springframework.test.context.support;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.test.context.ContextCustomizer;
@@ -33,77 +25,85 @@ import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+
 /**
  * {@link ContextCustomizer} to support
  * {@link DynamicPropertySource @DynamicPropertySource} methods.
  *
  * @author Phillip Webb
  * @author Sam Brannen
- * @since 5.2.5
  * @see DynamicPropertiesContextCustomizerFactory
+ * @since 5.2.5
  */
 class DynamicPropertiesContextCustomizer implements ContextCustomizer {
 
-	private static final String PROPERTY_SOURCE_NAME = "Dynamic Test Properties";
+    private static final String PROPERTY_SOURCE_NAME = "Dynamic Test Properties";
 
 
-	private final Set<Method> methods;
+    private final Set<Method> methods;
 
 
-	DynamicPropertiesContextCustomizer(Set<Method> methods) {
-		methods.forEach(this::assertValid);
-		this.methods = methods;
-	}
+    DynamicPropertiesContextCustomizer(Set<Method> methods) {
+        methods.forEach(this::assertValid);
+        this.methods = methods;
+    }
 
 
-	private void assertValid(Method method) {
-		Assert.state(Modifier.isStatic(method.getModifiers()),
-				() -> "@DynamicPropertySource method '" + method.getName() + "' must be static");
-		Class<?>[] types = method.getParameterTypes();
-		Assert.state(types.length == 1 && types[0] == DynamicPropertyRegistry.class,
-				() -> "@DynamicPropertySource method '" + method.getName() + "' must accept a single DynamicPropertyRegistry argument");
-	}
+    private void assertValid(Method method) {
+        Assert.state(Modifier.isStatic(method.getModifiers()),
+                () -> "@DynamicPropertySource method '" + method.getName() + "' must be static");
+        Class<?>[] types = method.getParameterTypes();
+        Assert.state(types.length == 1 && types[0] == DynamicPropertyRegistry.class,
+                () -> "@DynamicPropertySource method '" + method.getName() + "' must accept a single DynamicPropertyRegistry argument");
+    }
 
-	@Override
-	public void customizeContext(ConfigurableApplicationContext context,
-			MergedContextConfiguration mergedConfig) {
+    @Override
+    public void customizeContext(ConfigurableApplicationContext context,
+                                 MergedContextConfiguration mergedConfig) {
 
-		MutablePropertySources sources = context.getEnvironment().getPropertySources();
-		sources.addFirst(new DynamicValuesPropertySource(PROPERTY_SOURCE_NAME, buildDynamicPropertiesMap()));
-	}
+        MutablePropertySources sources = context.getEnvironment().getPropertySources();
+        sources.addFirst(new DynamicValuesPropertySource(PROPERTY_SOURCE_NAME, buildDynamicPropertiesMap()));
+    }
 
-	private Map<String, Supplier<Object>> buildDynamicPropertiesMap() {
-		Map<String, Supplier<Object>> map = new LinkedHashMap<>();
-		DynamicPropertyRegistry dynamicPropertyRegistry = (name, valueSupplier) -> {
-			Assert.hasText(name, "'name' must not be null or blank");
-			Assert.notNull(valueSupplier, "'valueSupplier' must not be null");
-			map.put(name, valueSupplier);
-		};
-		this.methods.forEach(method -> {
-			ReflectionUtils.makeAccessible(method);
-			ReflectionUtils.invokeMethod(method, null, dynamicPropertyRegistry);
-		});
-		return Collections.unmodifiableMap(map);
-	}
+    private Map<String, Supplier<Object>> buildDynamicPropertiesMap() {
+        Map<String, Supplier<Object>> map = new LinkedHashMap<>();
+        DynamicPropertyRegistry dynamicPropertyRegistry = (name, valueSupplier) -> {
+            Assert.hasText(name, "'name' must not be null or blank");
+            Assert.notNull(valueSupplier, "'valueSupplier' must not be null");
+            map.put(name, valueSupplier);
+        };
+        this.methods.forEach(method -> {
+            ReflectionUtils.makeAccessible(method);
+            ReflectionUtils.invokeMethod(method, null, dynamicPropertyRegistry);
+        });
+        return Collections.unmodifiableMap(map);
+    }
 
-	Set<Method> getMethods() {
-		return this.methods;
-	}
+    Set<Method> getMethods() {
+        return this.methods;
+    }
 
-	@Override
-	public int hashCode() {
-		return this.methods.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return this.methods.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		return this.methods.equals(((DynamicPropertiesContextCustomizer) obj).methods);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        return this.methods.equals(((DynamicPropertiesContextCustomizer) obj).methods);
+    }
 
 }

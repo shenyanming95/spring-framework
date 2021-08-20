@@ -17,7 +17,6 @@
 package org.springframework.web.servlet.view.script;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.DirectFieldAccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,13 +28,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ScriptTemplateViewResolverTests {
 
-	@Test
-	public void viewClass() throws Exception {
-		ScriptTemplateViewResolver resolver = new ScriptTemplateViewResolver();
-		assertThat(resolver.requiredViewClass()).isEqualTo(ScriptTemplateView.class);
-		DirectFieldAccessor viewAccessor = new DirectFieldAccessor(resolver);
-		Class<?> viewClass = (Class<?>) viewAccessor.getPropertyValue("viewClass");
-		assertThat(viewClass).isEqualTo(ScriptTemplateView.class);
-	}
+    @Test
+    public void viewClass() throws Exception {
+        ScriptTemplateViewResolver resolver = new ScriptTemplateViewResolver();
+        assertThat(resolver.requiredViewClass()).isEqualTo(ScriptTemplateView.class);
+        DirectFieldAccessor viewAccessor = new DirectFieldAccessor(resolver);
+        Class<?> viewClass = (Class<?>) viewAccessor.getPropertyValue("viewClass");
+        assertThat(viewClass).isEqualTo(ScriptTemplateView.class);
+    }
 
 }

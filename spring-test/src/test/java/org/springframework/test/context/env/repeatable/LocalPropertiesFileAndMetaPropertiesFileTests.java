@@ -16,15 +16,14 @@
 
 package org.springframework.test.context.env.repeatable;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.env.repeatable.LocalPropertiesFileAndMetaPropertiesFileTests.MetaFileTestProperty;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.junit.jupiter.api.Test;
-
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.env.repeatable.LocalPropertiesFileAndMetaPropertiesFileTests.MetaFileTestProperty;
 
 /**
  * Integration tests for {@link TestPropertySource @TestPropertySource} as a
@@ -42,21 +41,21 @@ import org.springframework.test.context.env.repeatable.LocalPropertiesFileAndMet
 @MetaFileTestProperty
 class LocalPropertiesFileAndMetaPropertiesFileTests extends AbstractRepeatableTestPropertySourceTests {
 
-	@Test
-	void test() {
-		assertEnvironmentValue("key1", "local file");
-		assertEnvironmentValue("key2", "meta file");
-	}
+    @Test
+    void test() {
+        assertEnvironmentValue("key1", "local file");
+        assertEnvironmentValue("key2", "meta file");
+    }
 
 
-	/**
-	 * Composed annotation that declares a properties file via
-	 * {@link TestPropertySource @TestPropertySource}.
-	 */
-	@Target(ElementType.TYPE)
-	@Retention(RetentionPolicy.RUNTIME)
-	@TestPropertySource("meta.properties")
-	@interface MetaFileTestProperty {
-	}
+    /**
+     * Composed annotation that declares a properties file via
+     * {@link TestPropertySource @TestPropertySource}.
+     */
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @TestPropertySource("meta.properties")
+    @interface MetaFileTestProperty {
+    }
 
 }

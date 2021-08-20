@@ -44,54 +44,53 @@ import org.springframework.util.FileCopyUtils;
  */
 class GzipSupport implements AfterEachCallback, ParameterResolver {
 
-	private static final Namespace namespace = Namespace.create(GzipSupport.class);
+    private static final Namespace namespace = Namespace.create(GzipSupport.class);
 
-	@Override
-	public void afterEach(ExtensionContext context) throws Exception {
-		GzippedFiles gzippedFiles = getStore(context).remove(GzippedFiles.class, GzippedFiles.class);
-		if (gzippedFiles != null) {
-			for (File gzippedFile: gzippedFiles.created) {
-				gzippedFile.delete();
-			}
-		}
-	}
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        GzippedFiles gzippedFiles = getStore(context).remove(GzippedFiles.class, GzippedFiles.class);
+        if (gzippedFiles != null) {
+            for (File gzippedFile : gzippedFiles.created) {
+                gzippedFile.delete();
+            }
+        }
+    }
 
-	@Override
-	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-		return parameterContext.getParameter().getType().equals(GzippedFiles.class);
-	}
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return parameterContext.getParameter().getType().equals(GzippedFiles.class);
+    }
 
-	@Override
-	public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-		return getStore(extensionContext).getOrComputeIfAbsent(GzippedFiles.class);
-	}
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return getStore(extensionContext).getOrComputeIfAbsent(GzippedFiles.class);
+    }
 
-	private Store getStore(ExtensionContext extensionContext) {
-		return extensionContext.getStore(namespace);
-	}
+    private Store getStore(ExtensionContext extensionContext) {
+        return extensionContext.getStore(namespace);
+    }
 
-	static class GzippedFiles {
+    static class GzippedFiles {
 
-		private final Set<File> created = new HashSet<>();
+        private final Set<File> created = new HashSet<>();
 
-		void create(String filePath) {
-			try {
-				Resource location = new ClassPathResource("test/", EncodedResourceResolverTests.class);
-				Resource resource = new FileSystemResource(location.createRelative(filePath).getFile());
+        void create(String filePath) {
+            try {
+                Resource location = new ClassPathResource("test/", EncodedResourceResolverTests.class);
+                Resource resource = new FileSystemResource(location.createRelative(filePath).getFile());
 
-				Path gzFilePath = Paths.get(resource.getFile().getAbsolutePath() + ".gz");
-				Files.deleteIfExists(gzFilePath);
+                Path gzFilePath = Paths.get(resource.getFile().getAbsolutePath() + ".gz");
+                Files.deleteIfExists(gzFilePath);
 
-				File gzFile = Files.createFile(gzFilePath).toFile();
-				GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(gzFile));
-				FileCopyUtils.copy(resource.getInputStream(), out);
-				created.add(gzFile);
-			}
-			catch (IOException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
+                File gzFile = Files.createFile(gzFilePath).toFile();
+                GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(gzFile));
+                FileCopyUtils.copy(resource.getInputStream(), out);
+                created.add(gzFile);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
 
-	}
+    }
 
 }

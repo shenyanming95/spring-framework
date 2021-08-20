@@ -27,9 +27,9 @@ import io.rsocket.core.RSocketConnector;
 @FunctionalInterface
 public interface RSocketConnectorConfigurer {
 
-	/**
-	 * Apply configuration to the given {@code RSocketConnector}.
-	 */
-	void configure(RSocketConnector connector);
+    /**
+     * Apply configuration to the given {@code RSocketConnector}.
+     */
+    void configure(RSocketConnector connector);
 
 }

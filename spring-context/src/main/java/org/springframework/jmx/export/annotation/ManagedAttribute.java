@@ -30,37 +30,37 @@ import java.lang.annotation.Target;
  * <p>Only valid when used on a JavaBean getter or setter.
  *
  * @author Rob Harrop
- * @since 1.2
  * @see org.springframework.jmx.export.metadata.ManagedAttribute
+ * @since 1.2
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ManagedAttribute {
 
-	/**
-	 * Set the default value for the attribute in a {@link javax.management.Descriptor}.
-	 */
-	String defaultValue() default "";
+    /**
+     * Set the default value for the attribute in a {@link javax.management.Descriptor}.
+     */
+    String defaultValue() default "";
 
-	/**
-	 * Set the description for the attribute in a {@link javax.management.Descriptor}.
-	 */
-	String description() default "";
+    /**
+     * Set the description for the attribute in a {@link javax.management.Descriptor}.
+     */
+    String description() default "";
 
-	/**
-	 * Set the currency time limit field in a {@link javax.management.Descriptor}.
-	 */
-	int currencyTimeLimit() default -1;
+    /**
+     * Set the currency time limit field in a {@link javax.management.Descriptor}.
+     */
+    int currencyTimeLimit() default -1;
 
-	/**
-	 * Set the persistPolicy field in a {@link javax.management.Descriptor}.
-	 */
-	String persistPolicy() default "";
+    /**
+     * Set the persistPolicy field in a {@link javax.management.Descriptor}.
+     */
+    String persistPolicy() default "";
 
-	/**
-	 * Set the persistPeriod field in a {@link javax.management.Descriptor}.
-	 */
-	int persistPeriod() default -1;
+    /**
+     * Set the persistPeriod field in a {@link javax.management.Descriptor}.
+     */
+    int persistPeriod() default -1;
 
 }

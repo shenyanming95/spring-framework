@@ -16,20 +16,16 @@
 
 package org.springframework.test.web.servlet.samples.standalone.resultmatchers;
 
-import java.net.URL;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.net.URL;
+
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,55 +39,55 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
  */
 class FlashAttributeAssertionTests {
 
-	private final MockMvc mockMvc = standaloneSetup(new PersonController())
-										.alwaysExpect(status().isFound())
-										.alwaysExpect(flash().attributeCount(3))
-										.build();
+    private final MockMvc mockMvc = standaloneSetup(new PersonController())
+            .alwaysExpect(status().isFound())
+            .alwaysExpect(flash().attributeCount(3))
+            .build();
 
 
-	@Test
-	void attributeCountWithWrongCount() throws Exception {
-		assertThatExceptionOfType(AssertionError.class)
-			.isThrownBy(() -> this.mockMvc.perform(post("/persons")).andExpect(flash().attributeCount(1)))
-			.withMessage("FlashMap size expected:<1> but was:<3>");
-	}
+    @Test
+    void attributeCountWithWrongCount() throws Exception {
+        assertThatExceptionOfType(AssertionError.class)
+                .isThrownBy(() -> this.mockMvc.perform(post("/persons")).andExpect(flash().attributeCount(1)))
+                .withMessage("FlashMap size expected:<1> but was:<3>");
+    }
 
-	@Test
-	void attributeExists() throws Exception {
-		this.mockMvc.perform(post("/persons"))
-			.andExpect(flash().attributeExists("one", "two", "three"));
-	}
+    @Test
+    void attributeExists() throws Exception {
+        this.mockMvc.perform(post("/persons"))
+                .andExpect(flash().attributeExists("one", "two", "three"));
+    }
 
-	@Test
-	void attributeEqualTo() throws Exception {
-		this.mockMvc.perform(post("/persons"))
-			.andExpect(flash().attribute("one", "1"))
-			.andExpect(flash().attribute("two", 2.222))
-			.andExpect(flash().attribute("three", new URL("https://example.com")));
-	}
+    @Test
+    void attributeEqualTo() throws Exception {
+        this.mockMvc.perform(post("/persons"))
+                .andExpect(flash().attribute("one", "1"))
+                .andExpect(flash().attribute("two", 2.222))
+                .andExpect(flash().attribute("three", new URL("https://example.com")));
+    }
 
-	@Test
-	void attributeMatchers() throws Exception {
-		this.mockMvc.perform(post("/persons"))
-			.andExpect(flash().attribute("one", containsString("1")))
-			.andExpect(flash().attribute("two", closeTo(2, 0.5)))
-			.andExpect(flash().attribute("three", notNullValue()))
-			.andExpect(flash().attribute("one", equalTo("1")))
-			.andExpect(flash().attribute("two", equalTo(2.222)))
-			.andExpect(flash().attribute("three", equalTo(new URL("https://example.com"))));
-	}
+    @Test
+    void attributeMatchers() throws Exception {
+        this.mockMvc.perform(post("/persons"))
+                .andExpect(flash().attribute("one", containsString("1")))
+                .andExpect(flash().attribute("two", closeTo(2, 0.5)))
+                .andExpect(flash().attribute("three", notNullValue()))
+                .andExpect(flash().attribute("one", equalTo("1")))
+                .andExpect(flash().attribute("two", equalTo(2.222)))
+                .andExpect(flash().attribute("three", equalTo(new URL("https://example.com"))));
+    }
 
 
-	@Controller
-	private static class PersonController {
+    @Controller
+    private static class PersonController {
 
-		@PostMapping("/persons")
-		String save(RedirectAttributes redirectAttrs) throws Exception {
-			redirectAttrs.addFlashAttribute("one", "1");
-			redirectAttrs.addFlashAttribute("two", 2.222);
-			redirectAttrs.addFlashAttribute("three", new URL("https://example.com"));
-			return "redirect:/person/1";
-		}
-	}
+        @PostMapping("/persons")
+        String save(RedirectAttributes redirectAttrs) throws Exception {
+            redirectAttrs.addFlashAttribute("one", "1");
+            redirectAttrs.addFlashAttribute("two", 2.222);
+            redirectAttrs.addFlashAttribute("three", new URL("https://example.com"));
+            return "redirect:/person/1";
+        }
+    }
 
 }

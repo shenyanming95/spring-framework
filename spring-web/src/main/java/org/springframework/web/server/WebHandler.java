@@ -16,10 +16,9 @@
 
 package org.springframework.web.server;
 
-import reactor.core.publisher.Mono;
-
 import org.springframework.web.server.adapter.HttpWebHandlerAdapter;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
+import reactor.core.publisher.Mono;
 
 /**
  * Contract to handle a web request.
@@ -34,11 +33,12 @@ import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
  */
 public interface WebHandler {
 
-	/**
-	 * Handle the web server exchange.
-	 * @param exchange the current server exchange
-	 * @return {@code Mono<Void>} to indicate when request handling is complete
-	 */
-	Mono<Void> handle(ServerWebExchange exchange);
+    /**
+     * Handle the web server exchange.
+     *
+     * @param exchange the current server exchange
+     * @return {@code Mono<Void>} to indicate when request handling is complete
+     */
+    Mono<Void> handle(ServerWebExchange exchange);
 
 }

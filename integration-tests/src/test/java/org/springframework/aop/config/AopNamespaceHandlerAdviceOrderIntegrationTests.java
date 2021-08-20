@@ -35,85 +35,83 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * AOP namespace.
  *
  * @author Sam Brannen
- * @since 5.2.7
  * @see org.springframework.aop.framework.autoproxy.AspectJAutoProxyAdviceOrderIntegrationTests
+ * @since 5.2.7
  */
 class AopNamespaceHandlerAdviceOrderIntegrationTests {
 
-	@Nested
-	@SpringJUnitConfig(locations = "AopNamespaceHandlerAdviceOrderIntegrationTests-afterFirst.xml")
-	@DirtiesContext
-	class AfterAdviceFirstTests {
+    static class Echo {
 
-		@Test
-		void afterAdviceIsInvokedFirst(@Autowired Echo echo, @Autowired InvocationTrackingAspect aspect) throws Exception {
-			assertThat(aspect.invocations).isEmpty();
-			assertThat(echo.echo(42)).isEqualTo(42);
-			assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after", "after returning");
+        Object echo(Object obj) throws Exception {
+            if (obj instanceof Exception) {
+                throw (Exception) obj;
+            }
+            return obj;
+        }
+    }
 
-			aspect.invocations.clear();
-			assertThatExceptionOfType(Exception.class).isThrownBy(() -> echo.echo(new Exception()));
-			assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after", "after throwing");
-		}
-	}
+    static class InvocationTrackingAspect {
 
-	@Nested
-	@SpringJUnitConfig(locations = "AopNamespaceHandlerAdviceOrderIntegrationTests-afterLast.xml")
-	@DirtiesContext
-	class AfterAdviceLastTests {
+        List<String> invocations = new ArrayList<>();
 
-		@Test
-		void afterAdviceIsInvokedLast(@Autowired Echo echo, @Autowired InvocationTrackingAspect aspect) throws Exception {
-			assertThat(aspect.invocations).isEmpty();
-			assertThat(echo.echo(42)).isEqualTo(42);
-			assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after returning", "after");
+        Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+            invocations.add("around - start");
+            try {
+                return joinPoint.proceed();
+            } finally {
+                invocations.add("around - end");
+            }
+        }
 
-			aspect.invocations.clear();
-			assertThatExceptionOfType(Exception.class).isThrownBy(() -> echo.echo(new Exception()));
-			assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after throwing", "after");
-		}
-	}
+        void before() {
+            invocations.add("before");
+        }
 
+        void afterReturning() {
+            invocations.add("after returning");
+        }
 
-	static class Echo {
+        void afterThrowing() {
+            invocations.add("after throwing");
+        }
 
-		Object echo(Object obj) throws Exception {
-			if (obj instanceof Exception) {
-				throw (Exception) obj;
-			}
-			return obj;
-		}
-	}
+        void after() {
+            invocations.add("after");
+        }
+    }
 
-	static class InvocationTrackingAspect {
+    @Nested
+    @SpringJUnitConfig(locations = "AopNamespaceHandlerAdviceOrderIntegrationTests-afterFirst.xml")
+    @DirtiesContext
+    class AfterAdviceFirstTests {
 
-		List<String> invocations = new ArrayList<>();
+        @Test
+        void afterAdviceIsInvokedFirst(@Autowired Echo echo, @Autowired InvocationTrackingAspect aspect) throws Exception {
+            assertThat(aspect.invocations).isEmpty();
+            assertThat(echo.echo(42)).isEqualTo(42);
+            assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after", "after returning");
 
-		Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-			invocations.add("around - start");
-			try {
-				return joinPoint.proceed();
-			}
-			finally {
-				invocations.add("around - end");
-			}
-		}
+            aspect.invocations.clear();
+            assertThatExceptionOfType(Exception.class).isThrownBy(() -> echo.echo(new Exception()));
+            assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after", "after throwing");
+        }
+    }
 
-		void before() {
-			invocations.add("before");
-		}
+    @Nested
+    @SpringJUnitConfig(locations = "AopNamespaceHandlerAdviceOrderIntegrationTests-afterLast.xml")
+    @DirtiesContext
+    class AfterAdviceLastTests {
 
-		void afterReturning() {
-			invocations.add("after returning");
-		}
+        @Test
+        void afterAdviceIsInvokedLast(@Autowired Echo echo, @Autowired InvocationTrackingAspect aspect) throws Exception {
+            assertThat(aspect.invocations).isEmpty();
+            assertThat(echo.echo(42)).isEqualTo(42);
+            assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after returning", "after");
 
-		void afterThrowing() {
-			invocations.add("after throwing");
-		}
-
-		void after() {
-			invocations.add("after");
-		}
-	}
+            aspect.invocations.clear();
+            assertThatExceptionOfType(Exception.class).isThrownBy(() -> echo.echo(new Exception()));
+            assertThat(aspect.invocations).containsExactly("around - start", "before", "around - end", "after throwing", "after");
+        }
+    }
 
 }

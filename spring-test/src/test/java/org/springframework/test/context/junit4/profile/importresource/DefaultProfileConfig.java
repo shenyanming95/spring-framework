@@ -29,9 +29,9 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource("org/springframework/test/context/junit4/profile/importresource/import.xml")
 public class DefaultProfileConfig {
 
-	@Bean
-	public Pet pet() {
-		return new Pet("Fido");
-	}
+    @Bean
+    public Pet pet() {
+        return new Pet("Fido");
+    }
 
 }

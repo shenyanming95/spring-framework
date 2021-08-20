@@ -3,26 +3,18 @@
 :doc-root: https://docs.spring.io
 :api-spring-framework: {doc-root}/spring-framework/docs/{spring-version}/javadoc-api/org/springframework
 
-`WebTestClient` is a thin shell around <<web-reactive.adoc#webflux-client, WebClient>>,
-using it to perform requests and exposing a dedicated, fluent API for verifying responses.
+`WebTestClient` is a thin shell around <<web-reactive.adoc#webflux-client, WebClient>>, using it to perform requests and exposing a dedicated, fluent API for verifying responses.
 `WebTestClient` binds to a WebFlux application by using a
-<<testing.adoc#mock-objects-web-reactive, mock request and response>>, or it can test any
-web server over an HTTP connection.
+<<testing.adoc#mock-objects-web-reactive, mock request and response>>, or it can test any web server over an HTTP connection.
 
 TIP: Kotlin users: See <<languages.adoc#kotlin-webtestclient-issue, this section>>
 related to use of the `WebTestClient`.
-
-
-
 
 [[webtestclient-setup]]
 == Setup
 
 To create a `WebTestClient` you must choose one of several server setup options.
-Effectively you're either configuring the WebFlux application to bind to or using
-a URL to connect to a running server.
-
-
+Effectively you're either configuring the WebFlux application to bind to or using a URL to connect to a running server.
 
 [[webtestclient-controller-config]]
 === Bind to Controller
@@ -34,6 +26,7 @@ The following example shows how to create a server setup to test one `@Controlle
 ----
 	client = WebTestClient.bindToController(new TestController()).build();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -41,11 +34,9 @@ The following example shows how to create a server setup to test one `@Controlle
 ----
 
 The preceding example loads the <<web-reactive.adoc#webflux-config, WebFlux Java configuration>>
-and registers the given controller. The resulting WebFlux application is tested
-without an HTTP server by using mock request and response objects. There are more methods
-on the builder to customize the default WebFlux Java configuration.
-
-
+and registers the given controller.
+The resulting WebFlux application is tested without an HTTP server by using mock request and response objects.
+There are more methods on the builder to customize the default WebFlux Java configuration.
 
 [[webtestclient-fn-config]]
 === Bind to Router Function
@@ -59,6 +50,7 @@ The following example shows how to set up a server from a
 	RouterFunction<?> route = ...
 	client = WebTestClient.bindToRouterFunction(route).build();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -67,16 +59,12 @@ The following example shows how to set up a server from a
 ----
 
 Internally, the configuration is passed to `RouterFunctions.toWebHandler`.
-The resulting WebFlux application is tested without an HTTP server by using mock
-request and response objects.
-
-
+The resulting WebFlux application is tested without an HTTP server by using mock request and response objects.
 
 [[webtestclient-context-config]]
 === Bind to `ApplicationContext`
 
-The following example shows how to set up a server from the Spring configuration of your
-application or some subset of it:
+The following example shows how to set up a server from the Spring configuration of your application or some subset of it:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -114,12 +102,9 @@ application or some subset of it:
 <2> Inject the configuration
 <3> Create the `WebTestClient`
 
-Internally, the configuration is passed to `WebHttpHandlerBuilder` to set up the request
-processing chain. See <<web-reactive.adoc#webflux-web-handler-api, WebHandler API>> for
-more details. The resulting WebFlux application is tested without an HTTP server by
-using mock request and response objects.
-
-
+Internally, the configuration is passed to `WebHttpHandlerBuilder` to set up the request processing chain.
+See <<web-reactive.adoc#webflux-web-handler-api, WebHandler API>> for more details.
+The resulting WebFlux application is tested without an HTTP server by using mock request and response objects.
 
 [[webtestclient-server-config]]
 === Bind to Server
@@ -131,20 +116,19 @@ The following server setup option lets you connect to a running server:
 ----
 	client = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
 	client = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build()
 ----
 
-
-
 [[webtestclient-client-config]]
 === Client Builder
 
-In addition to the server setup options described earlier, you can also configure client
-options, including base URL, default headers, client filters, and others. These options
-are readily available following `bindToServer`. For all others, you need to use
+In addition to the server setup options described earlier, you can also configure client options, including base URL, default headers, client filters, and others.
+These options are readily available following `bindToServer`.
+For all others, you need to use
 `configureClient()` to transition from server to client configuration, as follows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
@@ -155,6 +139,7 @@ are readily available following `bindToServer`. For all others, you need to use
 			.baseUrl("/test")
 			.build();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -164,14 +149,12 @@ are readily available following `bindToServer`. For all others, you need to use
 			.build()
 ----
 
-
-
-
 [[webtestclient-tests]]
 == Writing Tests
 
 `WebTestClient` provides an API identical to <<web-reactive.adoc#webflux-client, WebClient>>
-up to the point of performing a request by using `exchange()`. What follows after
+up to the point of performing a request by using `exchange()`.
+What follows after
 `exchange()` is a chained API workflow to verify responses.
 
 Typically, you start by asserting the response status and headers, as follows:
@@ -185,6 +168,7 @@ Typically, you start by asserting the response status and headers, as follows:
 				.expectStatus().isOk()
 				.expectHeader().contentType(MediaType.APPLICATION_JSON)
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -201,7 +185,8 @@ Then you specify how to decode and consume the response body:
 * `expectBodyList(Class<T>)`: Decode and collect objects to `List<T>`.
 * `expectBody()`: Decode to `byte[]` for <<webtestclient-json>> or an empty body.
 
-Then you can use built-in assertions for the body. The following example shows one way to do so:
+Then you can use built-in assertions for the body.
+The following example shows one way to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -211,6 +196,7 @@ Then you can use built-in assertions for the body. The following example shows o
 			.expectStatus().isOk()
 			.expectBodyList(Person.class).hasSize(3).contains(person);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -237,6 +223,7 @@ You can also go beyond the built-in assertions and create your own, as the follo
 				// custom assertions (e.g. AssertJ)...
 			});
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -260,6 +247,7 @@ You can also exit the workflow and get a result, as follows:
 			.expectBody(Person.class)
 			.returnResult();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -272,18 +260,15 @@ You can also exit the workflow and get a result, as follows:
 			.returnResult()
 ----
 
-TIP: When you need to decode to a target type with generics, look for the overloaded methods
-that accept
+TIP: When you need to decode to a target type with generics, look for the overloaded methods that accept
 {api-spring-framework}/core/ParameterizedTypeReference.html[`ParameterizedTypeReference`]
 instead of `Class<T>`.
-
-
 
 [[webtestclient-no-content]]
 === No Content
 
-If the response has no content (or you do not care if it does) use `Void.class`, which ensures
-that resources are released. The following example shows how to do so:
+If the response has no content (or you do not care if it does) use `Void.class`, which ensures that resources are released.
+The following example shows how to do so:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -293,6 +278,7 @@ that resources are released. The following example shows how to do so:
 			.expectStatus().isNotFound()
 			.expectBody(Void.class);
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -313,6 +299,7 @@ Alternatively, if you want to assert there is no response content, you can use c
 			.expectStatus().isCreated()
 			.expectBody().isEmpty();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -323,12 +310,12 @@ Alternatively, if you want to assert there is no response content, you can use c
 			.expectBody().isEmpty()
 ----
 
-
 [[webtestclient-json]]
 === JSON Content
 
-When you use `expectBody()`, the response is consumed as a `byte[]`. This is useful for
-raw content assertions. For example, you can use
+When you use `expectBody()`, the response is consumed as a `byte[]`.
+This is useful for raw content assertions.
+For example, you can use
 https://jsonassert.skyscreamer.org[JSONAssert] to verify JSON content, as follows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
@@ -340,6 +327,7 @@ https://jsonassert.skyscreamer.org[JSONAssert] to verify JSON content, as follow
 			.expectBody()
 			.json("{\"name\":\"Jane\"}")
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -362,6 +350,7 @@ You can also use https://github.com/jayway/JsonPath[JSONPath] expressions, as fo
 			.jsonPath("$[0].name").isEqualTo("Jane")
 			.jsonPath("$[1].name").isEqualTo("Jason");
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -373,14 +362,10 @@ You can also use https://github.com/jayway/JsonPath[JSONPath] expressions, as fo
 			.jsonPath("$[1].name").isEqualTo("Jason")
 ----
 
-
-
 [[webtestclient-stream]]
 === Streaming Responses
 
-To test infinite streams (for example, `"text/event-stream"` or `"application/stream+json"`),
-you need to exit the chained API (by using `returnResult`), immediately after the response status
-and header assertions, as the following example shows:
+To test infinite streams (for example, `"text/event-stream"` or `"application/stream+json"`), you need to exit the chained API (by using `returnResult`), immediately after the response status and header assertions, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
 .Java
@@ -392,6 +377,7 @@ and header assertions, as the following example shows:
 			.returnResult(MyEvent.class);
 
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -404,8 +390,8 @@ and header assertions, as the following example shows:
 			.returnResult<MyEvent>()
 ----
 
-Now you can consume the `Flux<T>`, assert decoded objects as they come, and then
-cancel at some point when test objectives are met. We recommend using the `StepVerifier`
+Now you can consume the `Flux<T>`, assert decoded objects as they come, and then cancel at some point when test objectives are met.
+We recommend using the `StepVerifier`
 from the `reactor-test` module to do that, as the following example shows:
 
 [source,java,indent=0,subs="verbatim,quotes",role="primary"]
@@ -420,6 +406,7 @@ from the `reactor-test` module to do that, as the following example shows:
 			.thenCancel()
 			.verify();
 ----
+
 [source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
 .Kotlin
 ----
@@ -433,13 +420,9 @@ from the `reactor-test` module to do that, as the following example shows:
 			.verify()
 ----
 
-
-
 [[webtestclient-request-body]]
 === Request Body
 
-When it comes to building requests, the `WebTestClient` offers an API  identical to
-the `WebClient`, and the implementation is mostly a simple pass-through. See the
-<<web-reactive.adoc#webflux-client-body, WebClient documentation>> for examples on
-how to prepare a request with a body, including submitting form data, multipart requests,
-and more.
+When it comes to building requests, the `WebTestClient` offers an API identical to the `WebClient`, and the implementation is mostly a simple pass-through.
+See the
+<<web-reactive.adoc#webflux-client-body, WebClient documentation>> for examples on how to prepare a request with a body, including submitting form data, multipart requests, and more.

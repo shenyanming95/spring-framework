@@ -38,86 +38,85 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SpelCompilerTests {
 
-	@Test  // gh-24357
-	void expressionCompilesWhenMethodComesFromPublicInterface() {
-		SpelParserConfiguration config = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, null);
-		SpelExpressionParser parser = new SpelExpressionParser(config);
+    @Test
+        // gh-24357
+    void expressionCompilesWhenMethodComesFromPublicInterface() {
+        SpelParserConfiguration config = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, null);
+        SpelExpressionParser parser = new SpelExpressionParser(config);
 
-		OrderedComponent component = new OrderedComponent();
-		Expression expression = parser.parseExpression("order");
+        OrderedComponent component = new OrderedComponent();
+        Expression expression = parser.parseExpression("order");
 
-		// Evaluate the expression multiple times to ensure that it gets compiled.
-		IntStream.rangeClosed(1, 5).forEach(i -> assertThat(expression.getValue(component)).isEqualTo(42));
-	}
+        // Evaluate the expression multiple times to ensure that it gets compiled.
+        IntStream.rangeClosed(1, 5).forEach(i -> assertThat(expression.getValue(component)).isEqualTo(42));
+    }
 
-	@Test  // gh-25706
-	void defaultMethodInvocation() {
-		SpelParserConfiguration config = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, null);
-		SpelExpressionParser parser = new SpelExpressionParser(config);
+    @Test
+        // gh-25706
+    void defaultMethodInvocation() {
+        SpelParserConfiguration config = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, null);
+        SpelExpressionParser parser = new SpelExpressionParser(config);
 
-		StandardEvaluationContext context = new StandardEvaluationContext();
-		Item item = new Item();
-		context.setRootObject(item);
+        StandardEvaluationContext context = new StandardEvaluationContext();
+        Item item = new Item();
+        context.setRootObject(item);
 
-		Expression expression = parser.parseExpression("#root.isEditable2()");
-		assertThat(SpelCompiler.compile(expression)).isFalse();
-		assertThat(expression.getValue(context)).isEqualTo(false);
-		assertThat(SpelCompiler.compile(expression)).isTrue();
-		SpelCompilationCoverageTests.assertIsCompiled(expression);
-		assertThat(expression.getValue(context)).isEqualTo(false);
+        Expression expression = parser.parseExpression("#root.isEditable2()");
+        assertThat(SpelCompiler.compile(expression)).isFalse();
+        assertThat(expression.getValue(context)).isEqualTo(false);
+        assertThat(SpelCompiler.compile(expression)).isTrue();
+        SpelCompilationCoverageTests.assertIsCompiled(expression);
+        assertThat(expression.getValue(context)).isEqualTo(false);
 
-		context.setVariable("user", new User());
-		expression = parser.parseExpression("#root.isEditable(#user)");
-		assertThat(SpelCompiler.compile(expression)).isFalse();
-		assertThat(expression.getValue(context)).isEqualTo(true);
-		assertThat(SpelCompiler.compile(expression)).isTrue();
-		SpelCompilationCoverageTests.assertIsCompiled(expression);
-		assertThat(expression.getValue(context)).isEqualTo(true);
-	}
-
-
-	static class OrderedComponent implements Ordered {
-
-		@Override
-		public int getOrder() {
-			return 42;
-		}
-	}
+        context.setVariable("user", new User());
+        expression = parser.parseExpression("#root.isEditable(#user)");
+        assertThat(SpelCompiler.compile(expression)).isFalse();
+        assertThat(expression.getValue(context)).isEqualTo(true);
+        assertThat(SpelCompiler.compile(expression)).isTrue();
+        SpelCompilationCoverageTests.assertIsCompiled(expression);
+        assertThat(expression.getValue(context)).isEqualTo(true);
+    }
 
 
-	public static class User {
+    public interface Editable {
 
-		boolean isAdmin() {
-			return true;
-		}
-	}
+        default boolean isEditable(User user) {
+            return user.isAdmin() && hasSomeProperty();
+        }
 
+        default boolean isEditable2() {
+            return false;
+        }
 
-	public static class Item implements Editable {
+        boolean hasSomeProperty();
+    }
 
-		// some fields
-		private String someField = "";
+    static class OrderedComponent implements Ordered {
 
-		// some getters and setters
+        @Override
+        public int getOrder() {
+            return 42;
+        }
+    }
 
-		@Override
-		public boolean hasSomeProperty() {
-			return someField != null;
-		}
-	}
+    public static class User {
 
+        boolean isAdmin() {
+            return true;
+        }
+    }
 
-	public interface Editable {
+    public static class Item implements Editable {
 
-		default boolean isEditable(User user) {
-			return user.isAdmin() && hasSomeProperty();
-		}
+        // some fields
+        private String someField = "";
 
-		default boolean isEditable2() {
-			return false;
-		}
+        // some getters and setters
 
-		boolean hasSomeProperty();
-	}
+        @Override
+        public boolean hasSomeProperty() {
+            return someField != null;
+        }
+    }
 
 }

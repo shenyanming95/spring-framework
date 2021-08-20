@@ -17,7 +17,6 @@
 package org.springframework.aop.interceptor;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.testfixture.beans.ITestBean;
@@ -31,51 +30,51 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ExposeBeanNameAdvisorsTests {
 
-	private class RequiresBeanNameBoundTestBean extends TestBean {
-		private final String beanName;
+    @Test
+    public void testNoIntroduction() {
+        String beanName = "foo";
+        TestBean target = new RequiresBeanNameBoundTestBean(beanName);
+        ProxyFactory pf = new ProxyFactory(target);
+        pf.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+        pf.addAdvisor(ExposeBeanNameAdvisors.createAdvisorWithoutIntroduction(beanName));
+        ITestBean proxy = (ITestBean) pf.getProxy();
 
-		public RequiresBeanNameBoundTestBean(String beanName) {
-			this.beanName = beanName;
-		}
+        boolean condition = proxy instanceof NamedBean;
+        assertThat(condition).as("No introduction").isFalse();
+        // Requires binding
+        proxy.getAge();
+    }
 
-		@Override
-		public int getAge() {
-			assertThat(ExposeBeanNameAdvisors.getBeanName()).isEqualTo(beanName);
-			return super.getAge();
-		}
-	}
+    @Test
+    public void testWithIntroduction() {
+        String beanName = "foo";
+        TestBean target = new RequiresBeanNameBoundTestBean(beanName);
+        ProxyFactory pf = new ProxyFactory(target);
+        pf.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
+        pf.addAdvisor(ExposeBeanNameAdvisors.createAdvisorIntroducingNamedBean(beanName));
+        ITestBean proxy = (ITestBean) pf.getProxy();
 
-	@Test
-	public void testNoIntroduction() {
-		String beanName = "foo";
-		TestBean target = new RequiresBeanNameBoundTestBean(beanName);
-		ProxyFactory pf = new ProxyFactory(target);
-		pf.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
-		pf.addAdvisor(ExposeBeanNameAdvisors.createAdvisorWithoutIntroduction(beanName));
-		ITestBean proxy = (ITestBean) pf.getProxy();
+        boolean condition = proxy instanceof NamedBean;
+        assertThat(condition).as("Introduction was made").isTrue();
+        // Requires binding
+        proxy.getAge();
 
-		boolean condition = proxy instanceof NamedBean;
-		assertThat(condition).as("No introduction").isFalse();
-		// Requires binding
-		proxy.getAge();
-	}
+        NamedBean nb = (NamedBean) proxy;
+        assertThat(nb.getBeanName()).as("Name returned correctly").isEqualTo(beanName);
+    }
 
-	@Test
-	public void testWithIntroduction() {
-		String beanName = "foo";
-		TestBean target = new RequiresBeanNameBoundTestBean(beanName);
-		ProxyFactory pf = new ProxyFactory(target);
-		pf.addAdvisor(ExposeInvocationInterceptor.ADVISOR);
-		pf.addAdvisor(ExposeBeanNameAdvisors.createAdvisorIntroducingNamedBean(beanName));
-		ITestBean proxy = (ITestBean) pf.getProxy();
+    private class RequiresBeanNameBoundTestBean extends TestBean {
+        private final String beanName;
 
-		boolean condition = proxy instanceof NamedBean;
-		assertThat(condition).as("Introduction was made").isTrue();
-		// Requires binding
-		proxy.getAge();
+        public RequiresBeanNameBoundTestBean(String beanName) {
+            this.beanName = beanName;
+        }
 
-		NamedBean nb = (NamedBean) proxy;
-		assertThat(nb.getBeanName()).as("Name returned correctly").isEqualTo(beanName);
-	}
+        @Override
+        public int getAge() {
+            assertThat(ExposeBeanNameAdvisors.getBeanName()).isEqualTo(beanName);
+            return super.getAge();
+        }
+    }
 
 }

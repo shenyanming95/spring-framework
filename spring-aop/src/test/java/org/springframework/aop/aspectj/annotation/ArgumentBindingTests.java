@@ -16,86 +16,20 @@
 
 package org.springframework.aop.aspectj.annotation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Method;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.aspectj.AspectJAdviceParameterNameDiscoverer;
 import org.springframework.beans.testfixture.beans.ITestBean;
 import org.springframework.beans.testfixture.beans.TestBean;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Method;
 
-/**
- * @author Adrian Colyer
- * @author Juergen Hoeller
- * @author Chris Beams
- */
-public class ArgumentBindingTests {
-
-	@Test
-	public void testBindingInPointcutUsedByAdvice() {
-		TestBean tb = new TestBean();
-		AspectJProxyFactory proxyFactory = new AspectJProxyFactory(tb);
-		proxyFactory.addAspect(NamedPointcutWithArgs.class);
-
-		ITestBean proxiedTestBean = proxyFactory.getProxy();
-		assertThatIllegalArgumentException().isThrownBy(() ->
-				proxiedTestBean.setName("Supercalifragalisticexpialidocious"));
-	}
-
-	@Test
-	public void testAnnotationArgumentNameBinding() {
-		TransactionalBean tb = new TransactionalBean();
-		AspectJProxyFactory proxyFactory = new AspectJProxyFactory(tb);
-		proxyFactory.addAspect(PointcutWithAnnotationArgument.class);
-
-		ITransactionalBean proxiedTestBean = proxyFactory.getProxy();
-		assertThatIllegalStateException().isThrownBy(
-				proxiedTestBean::doInTransaction);
-	}
-
-	@Test
-	public void testParameterNameDiscoverWithReferencePointcut() throws Exception {
-		AspectJAdviceParameterNameDiscoverer discoverer =
-				new AspectJAdviceParameterNameDiscoverer("somepc(formal) && set(* *)");
-		discoverer.setRaiseExceptions(true);
-		Method methodUsedForParameterTypeDiscovery =
-				getClass().getMethod("methodWithOneParam", String.class);
-		String[] pnames = discoverer.getParameterNames(methodUsedForParameterTypeDiscovery);
-		assertThat(pnames.length).as("one parameter name").isEqualTo(1);
-		assertThat(pnames[0]).isEqualTo("formal");
-	}
-
-
-	public void methodWithOneParam(String aParam) {
-	}
-
-
-	public interface ITransactionalBean {
-
-		@Transactional
-		void doInTransaction();
-	}
-
-
-	public static class TransactionalBean implements ITransactionalBean {
-
-		@Override
-		@Transactional
-		public void doInTransaction() {
-		}
-	}
-
-}
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Represents Spring's Transactional annotation without actually introducing the dependency
@@ -104,15 +38,77 @@ public class ArgumentBindingTests {
 @interface Transactional {
 }
 
+/**
+ * @author Adrian Colyer
+ * @author Juergen Hoeller
+ * @author Chris Beams
+ */
+public class ArgumentBindingTests {
+
+    @Test
+    public void testBindingInPointcutUsedByAdvice() {
+        TestBean tb = new TestBean();
+        AspectJProxyFactory proxyFactory = new AspectJProxyFactory(tb);
+        proxyFactory.addAspect(NamedPointcutWithArgs.class);
+
+        ITestBean proxiedTestBean = proxyFactory.getProxy();
+        assertThatIllegalArgumentException().isThrownBy(() ->
+                proxiedTestBean.setName("Supercalifragalisticexpialidocious"));
+    }
+
+    @Test
+    public void testAnnotationArgumentNameBinding() {
+        TransactionalBean tb = new TransactionalBean();
+        AspectJProxyFactory proxyFactory = new AspectJProxyFactory(tb);
+        proxyFactory.addAspect(PointcutWithAnnotationArgument.class);
+
+        ITransactionalBean proxiedTestBean = proxyFactory.getProxy();
+        assertThatIllegalStateException().isThrownBy(
+                proxiedTestBean::doInTransaction);
+    }
+
+    @Test
+    public void testParameterNameDiscoverWithReferencePointcut() throws Exception {
+        AspectJAdviceParameterNameDiscoverer discoverer =
+                new AspectJAdviceParameterNameDiscoverer("somepc(formal) && set(* *)");
+        discoverer.setRaiseExceptions(true);
+        Method methodUsedForParameterTypeDiscovery =
+                getClass().getMethod("methodWithOneParam", String.class);
+        String[] pnames = discoverer.getParameterNames(methodUsedForParameterTypeDiscovery);
+        assertThat(pnames.length).as("one parameter name").isEqualTo(1);
+        assertThat(pnames[0]).isEqualTo("formal");
+    }
+
+
+    public void methodWithOneParam(String aParam) {
+    }
+
+
+    public interface ITransactionalBean {
+
+        @Transactional
+        void doInTransaction();
+    }
+
+
+    public static class TransactionalBean implements ITransactionalBean {
+
+        @Override
+        @Transactional
+        public void doInTransaction() {
+        }
+    }
+
+}
 
 @Aspect
 class PointcutWithAnnotationArgument {
 
-	@Around(value = "execution(* org.springframework..*.*(..)) && @annotation(transaction)")
-	public Object around(ProceedingJoinPoint pjp, Transactional transaction) throws Throwable {
-		System.out.println("Invoked with transaction " + transaction);
-		throw new IllegalStateException();
-	}
+    @Around(value = "execution(* org.springframework..*.*(..)) && @annotation(transaction)")
+    public Object around(ProceedingJoinPoint pjp, Transactional transaction) throws Throwable {
+        System.out.println("Invoked with transaction " + transaction);
+        throw new IllegalStateException();
+    }
 
 }
 
@@ -120,13 +116,14 @@ class PointcutWithAnnotationArgument {
 @Aspect
 class NamedPointcutWithArgs {
 
-	@Pointcut("execution(* *(..)) && args(s,..)")
-	public void pointcutWithArgs(String s) {}
+    @Pointcut("execution(* *(..)) && args(s,..)")
+    public void pointcutWithArgs(String s) {
+    }
 
-	@Around("pointcutWithArgs(aString)")
-	public Object doAround(ProceedingJoinPoint pjp, String aString) throws Throwable {
-		System.out.println("got '" + aString + "' at '" + pjp + "'");
-		throw new IllegalArgumentException(aString);
-	}
+    @Around("pointcutWithArgs(aString)")
+    public Object doAround(ProceedingJoinPoint pjp, String aString) throws Throwable {
+        System.out.println("got '" + aString + "' at '" + pjp + "'");
+        throw new IllegalArgumentException(aString);
+    }
 
 }

@@ -16,12 +16,7 @@
 
 package org.springframework.beans.factory.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Marks a class as being eligible for Spring-driven configuration.
@@ -40,24 +35,24 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Configurable {
 
-	/**
-	 * The name of the bean definition that serves as the configuration template.
-	 */
-	String value() default "";
+    /**
+     * The name of the bean definition that serves as the configuration template.
+     */
+    String value() default "";
 
-	/**
-	 * Are dependencies to be injected via autowiring?
-	 */
-	Autowire autowire() default Autowire.NO;
+    /**
+     * Are dependencies to be injected via autowiring?
+     */
+    Autowire autowire() default Autowire.NO;
 
-	/**
-	 * Is dependency checking to be performed for configured objects?
-	 */
-	boolean dependencyCheck() default false;
+    /**
+     * Is dependency checking to be performed for configured objects?
+     */
+    boolean dependencyCheck() default false;
 
-	/**
-	 * Are dependencies to be injected prior to the construction of an object?
-	 */
-	boolean preConstruction() default false;
+    /**
+     * Are dependencies to be injected prior to the construction of an object?
+     */
+    boolean preConstruction() default false;
 
 }

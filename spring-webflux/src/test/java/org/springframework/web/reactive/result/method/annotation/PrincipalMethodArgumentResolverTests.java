@@ -39,46 +39,46 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class PrincipalMethodArgumentResolverTests {
 
-	private final PrincipalMethodArgumentResolver resolver =
-			new PrincipalMethodArgumentResolver(ReactiveAdapterRegistry.getSharedInstance());
+    private final PrincipalMethodArgumentResolver resolver =
+            new PrincipalMethodArgumentResolver(ReactiveAdapterRegistry.getSharedInstance());
 
-	private final ResolvableMethod testMethod = ResolvableMethod.on(getClass()).named("handle").build();
-
-
-	@Test
-	public void supportsParameter() {
-		assertThat(this.resolver.supportsParameter(this.testMethod.arg(Principal.class))).isTrue();
-		assertThat(this.resolver.supportsParameter(this.testMethod.arg(Mono.class, Principal.class))).isTrue();
-		assertThat(this.resolver.supportsParameter(this.testMethod.arg(Single.class, Principal.class))).isTrue();
-	}
+    private final ResolvableMethod testMethod = ResolvableMethod.on(getClass()).named("handle").build();
 
 
-	@Test
-	public void resolverArgument() {
-		Principal user = () -> "Joe";
-		ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"))
-				.mutate().principal(Mono.just(user)).build();
-
-		BindingContext context = new BindingContext();
-		MethodParameter param = this.testMethod.arg(Principal.class);
-		Object actual = this.resolver.resolveArgument(param, context, exchange).block();
-		assertThat(actual).isSameAs(user);
-
-		param = this.testMethod.arg(Mono.class, Principal.class);
-		actual = this.resolver.resolveArgument(param, context, exchange).block();
-		assertThat(actual).isInstanceOf(Mono.class).extracting(o -> ((Mono<?>) o).block()).isSameAs(user);
-
-		param = this.testMethod.arg(Single.class, Principal.class);
-		actual = this.resolver.resolveArgument(param, context, exchange).block();
-		assertThat(actual).isInstanceOf(Single.class).extracting(o -> ((Single<?>) o).blockingGet()).isSameAs(user);
-	}
+    @Test
+    public void supportsParameter() {
+        assertThat(this.resolver.supportsParameter(this.testMethod.arg(Principal.class))).isTrue();
+        assertThat(this.resolver.supportsParameter(this.testMethod.arg(Mono.class, Principal.class))).isTrue();
+        assertThat(this.resolver.supportsParameter(this.testMethod.arg(Single.class, Principal.class))).isTrue();
+    }
 
 
-	@SuppressWarnings("unused")
-	void handle(
-			Principal user,
-			Mono<Principal> userMono,
-			Single<Principal> singleUser) {
-	}
+    @Test
+    public void resolverArgument() {
+        Principal user = () -> "Joe";
+        ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"))
+                .mutate().principal(Mono.just(user)).build();
+
+        BindingContext context = new BindingContext();
+        MethodParameter param = this.testMethod.arg(Principal.class);
+        Object actual = this.resolver.resolveArgument(param, context, exchange).block();
+        assertThat(actual).isSameAs(user);
+
+        param = this.testMethod.arg(Mono.class, Principal.class);
+        actual = this.resolver.resolveArgument(param, context, exchange).block();
+        assertThat(actual).isInstanceOf(Mono.class).extracting(o -> ((Mono<?>) o).block()).isSameAs(user);
+
+        param = this.testMethod.arg(Single.class, Principal.class);
+        actual = this.resolver.resolveArgument(param, context, exchange).block();
+        assertThat(actual).isInstanceOf(Single.class).extracting(o -> ((Single<?>) o).blockingGet()).isSameAs(user);
+    }
+
+
+    @SuppressWarnings("unused")
+    void handle(
+            Principal user,
+            Mono<Principal> userMono,
+            Single<Principal> singleUser) {
+    }
 
 }

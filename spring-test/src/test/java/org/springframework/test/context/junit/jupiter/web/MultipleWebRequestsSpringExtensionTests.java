@@ -18,7 +18,6 @@ package org.springframework.test.context.junit.jupiter.web;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.SpringJUnitJupiterTestSuite;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -28,9 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 /**
@@ -43,34 +40,34 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  * Platform, simply run {@link SpringJUnitJupiterTestSuite} as a JUnit 4 test.
  *
  * @author Sam Brannen
- * @since 5.0
  * @see SpringExtension
  * @see SpringJUnitWebConfig
  * @see org.springframework.test.context.junit.jupiter.web.WebSpringExtensionTests
+ * @since 5.0
  */
 @SpringJUnitWebConfig(WebConfig.class)
 class MultipleWebRequestsSpringExtensionTests {
 
-	MockMvc mockMvc;
+    MockMvc mockMvc;
 
-	@BeforeEach
-	void setUpMockMvc(WebApplicationContext wac) {
-		this.mockMvc = webAppContextSetup(wac)
-			.alwaysExpect(status().isOk())
-			.alwaysExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-			.build();
-	}
+    @BeforeEach
+    void setUpMockMvc(WebApplicationContext wac) {
+        this.mockMvc = webAppContextSetup(wac)
+                .alwaysExpect(status().isOk())
+                .alwaysExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .build();
+    }
 
-	@Test
-	void getPerson42() throws Exception {
-		this.mockMvc.perform(get("/person/42").accept(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.name", is("Dilbert")));
-	}
+    @Test
+    void getPerson42() throws Exception {
+        this.mockMvc.perform(get("/person/42").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.name", is("Dilbert")));
+    }
 
-	@Test
-	void getPerson99() throws Exception {
-		this.mockMvc.perform(get("/person/99").accept(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.name", is("Wally")));
-	}
+    @Test
+    void getPerson99() throws Exception {
+        this.mockMvc.perform(get("/person/99").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.name", is("Wally")));
+    }
 
 }

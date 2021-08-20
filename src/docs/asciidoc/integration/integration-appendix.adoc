@@ -1,24 +1,17 @@
 = Appendix
 
-
-
-
 [[xsd-schemas]]
 == XML Schemas
 
 This part of the appendix lists XML schemas related to integration technologies.
 
-
-
 [[xsd-schemas-jee]]
 === The `jee` Schema
 
-The `jee` elements deal with issues related to Java EE (Java Enterprise Edition) configuration,
-such as looking up a JNDI object and defining EJB references.
+The `jee` elements deal with issues related to Java EE (Java Enterprise Edition) configuration, such as looking up a JNDI object and defining EJB references.
 
-To use the elements in the `jee` schema, you need to have the following preamble at the top
-of your Spring XML configuration file. The text in the following snippet references the
-correct schema so that the elements in the `jee` namespace are available to you:
+To use the elements in the `jee` schema, you need to have the following preamble at the top of your Spring XML configuration file.
+The text in the following snippet references the correct schema so that the elements in the `jee` namespace are available to you:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -35,8 +28,6 @@ correct schema so that the elements in the `jee` namespace are available to you:
 
 	</beans>
 ----
-
-
 
 [[xsd-schemas-jee-jndi-lookup]]
 ==== <jee:jndi-lookup/> (simple)
@@ -69,8 +60,6 @@ schema:
 	</bean>
 ----
 
-
-
 [[xsd-schemas-jee-jndi-lookup-environment-single]]
 ==== `<jee:jndi-lookup/>` (with Single JNDI Environment Setting)
 
@@ -100,12 +89,10 @@ The following example shows how to use JNDI to look up an environment variable w
 	</jee:jndi-lookup>
 ----
 
-
 [[xsd-schemas-jee-jndi-lookup-evironment-multiple]]
 ==== `<jee:jndi-lookup/>` (with Multiple JNDI Environment Settings)
 
-The following example shows how to use JNDI to look up multiple environment variables
-without `jee`:
+The following example shows how to use JNDI to look up multiple environment variables without `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -136,12 +123,10 @@ The following example shows how to use JNDI to look up multiple environment vari
 	</jee:jndi-lookup>
 ----
 
-
 [[xsd-schemas-jee-jndi-lookup-complex]]
 ==== `<jee:jndi-lookup/>` (Complex)
 
-The following example shows how to use JNDI to look up a data source and a number of
-different properties without `jee`:
+The following example shows how to use JNDI to look up a data source and a number of different properties without `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -156,8 +141,7 @@ different properties without `jee`:
 	</bean>
 ----
 
-The following example shows how to use JNDI to look up a data source and a number of
-different properties with `jee`:
+The following example shows how to use JNDI to look up a data source and a number of different properties with `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -171,15 +155,12 @@ different properties with `jee`:
 			proxy-interface="com.myapp.Thing"/>
 ----
 
-
-
 [[xsd-schemas-jee-local-slsb]]
 ==== `<jee:local-slsb/>` (Simple)
 
 The `<jee:local-slsb/>` element configures a reference to a local EJB Stateless Session Bean.
 
-The following example shows how to configures a reference to a local EJB Stateless Session Bean
-without `jee`:
+The following example shows how to configures a reference to a local EJB Stateless Session Bean without `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -191,8 +172,7 @@ without `jee`:
 	</bean>
 ----
 
-The following example shows how to configures a reference to a local EJB Stateless Session Bean
-with `jee`:
+The following example shows how to configures a reference to a local EJB Stateless Session Bean with `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -201,15 +181,12 @@ with `jee`:
 			business-interface="com.foo.service.RentalService"/>
 ----
 
-
-
 [[xsd-schemas-jee-local-slsb-complex]]
 ==== `<jee:local-slsb/>` (Complex)
 
 The `<jee:local-slsb/>` element configures a reference to a local EJB Stateless Session Bean.
 
-The following example shows how to configures a reference to a local EJB Stateless Session Bean
-and a number of properties without `jee`:
+The following example shows how to configures a reference to a local EJB Stateless Session Bean and a number of properties without `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -224,8 +201,7 @@ and a number of properties without `jee`:
 	</bean>
 ----
 
-The following example shows how to configures a reference to a local EJB Stateless Session Bean
-and a number of properties with `jee`:
+The following example shows how to configures a reference to a local EJB Stateless Session Bean and a number of properties with `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -238,14 +214,12 @@ and a number of properties with `jee`:
 			resource-ref="true">
 ----
 
-
 [[xsd-schemas-jee-remote-slsb]]
 ==== <jee:remote-slsb/>
 
 The `<jee:remote-slsb/>` element configures a reference to a `remote` EJB Stateless Session Bean.
 
-The following example shows how to configures a reference to a remote EJB Stateless Session Bean
-without `jee`:
+The following example shows how to configures a reference to a remote EJB Stateless Session Bean without `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -262,8 +236,7 @@ without `jee`:
 	</bean>
 ----
 
-The following example shows how to configures a reference to a remote EJB Stateless Session Bean
-with `jee`:
+The following example shows how to configures a reference to a remote EJB Stateless Session Bean with `jee`:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -278,21 +251,16 @@ with `jee`:
 			refresh-home-on-connect-failure="true">
 ----
 
-
-
 [[xsd-schemas-jms]]
 === The `jms` Schema
 
 The `jms` elements deal with configuring JMS-related beans, such as Spring's
-<<integration.adoc#jms-mdp, Message Listener Containers>>. These elements are detailed in the
-section of the <<integration.adoc#jms, JMS chapter>> entitled <<integration.adoc#jms-namespace,
-JMS Namespace Support>>. See that chapter for full details on this support
-and the `jms` elements themselves.
+<<integration.adoc#jms-mdp, Message Listener Containers>>.
+These elements are detailed in the section of the <<integration.adoc#jms, JMS chapter>> entitled <<integration.adoc#jms-namespace, JMS Namespace Support>>.
+See that chapter for full details on this support and the `jms` elements themselves.
 
-In the interest of completeness, to use the elements in the `jms` schema, you need to have
-the following preamble at the top of your Spring XML configuration file. The text in the
-following snippet references the correct schema so that the elements in the `jms` namespace
-are available to you:
+In the interest of completeness, to use the elements in the `jms` schema, you need to have the following preamble at the top of your Spring XML configuration file.
+The text in the following snippet references the correct schema so that the elements in the `jms` namespace are available to you:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]
@@ -310,27 +278,23 @@ are available to you:
 	</beans>
 ----
 
-
-
 [[xsd-schemas-context-mbe]]
 === Using `<context:mbean-export/>`
 
 This element is detailed in
 <<integration.adoc#jmx-context-mbeanexport, Configuring Annotation-based MBean Export>>.
 
-
-
 [[xsd-schemas-cache]]
 === The `cache` Schema
 
-You can use the `cache` elements to enable support for Spring's `@CacheEvict`, `@CachePut`,
-and `@Caching` annotations. It it also supports declarative XML-based caching. See
+You can use the `cache` elements to enable support for Spring's `@CacheEvict`, `@CachePut`, and `@Caching` annotations.
+It it also supports declarative XML-based caching.
+See
 <<integration.adoc#cache-annotation-enable, Enabling Caching Annotations>> and
 <<integration.adoc#cache-declarative-xml, Declarative XML-based Caching>> for details.
 
-To use the elements in the `cache` schema, you need to have the following preamble at the
-top of your Spring XML configuration file. The text in the following snippet references
-the correct schema so that the elements in the `cache` namespace are available to you:
+To use the elements in the `cache` schema, you need to have the following preamble at the top of your Spring XML configuration file.
+The text in the following snippet references the correct schema so that the elements in the `cache` namespace are available to you:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes"]

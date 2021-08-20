@@ -16,18 +16,17 @@
 
 package org.springframework.web.servlet.support;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
 import org.springframework.web.testfixture.servlet.MockHttpServletResponse;
 import org.springframework.web.testfixture.servlet.MockServletContext;
 import org.springframework.web.util.WebUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,60 +36,60 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RequestContextTests {
 
-	private MockHttpServletRequest request = new MockHttpServletRequest();
+    private MockHttpServletRequest request = new MockHttpServletRequest();
 
-	private MockHttpServletResponse response = new MockHttpServletResponse();
+    private MockHttpServletResponse response = new MockHttpServletResponse();
 
-	private MockServletContext servletContext = new MockServletContext();
+    private MockServletContext servletContext = new MockServletContext();
 
-	private Map<String, Object> model = new HashMap<>();
+    private Map<String, Object> model = new HashMap<>();
 
-	@BeforeEach
-	public void init() {
-		GenericWebApplicationContext applicationContext = new GenericWebApplicationContext();
-		applicationContext.refresh();
-		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
-	}
+    @BeforeEach
+    public void init() {
+        GenericWebApplicationContext applicationContext = new GenericWebApplicationContext();
+        applicationContext.refresh();
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
+    }
 
-	@Test
-	public void testGetContextUrl() throws Exception {
-		request.setContextPath("foo/");
-		RequestContext context = new RequestContext(request, response, servletContext, model);
-		assertThat(context.getContextUrl("bar")).isEqualTo("foo/bar");
-	}
+    @Test
+    public void testGetContextUrl() throws Exception {
+        request.setContextPath("foo/");
+        RequestContext context = new RequestContext(request, response, servletContext, model);
+        assertThat(context.getContextUrl("bar")).isEqualTo("foo/bar");
+    }
 
-	@Test
-	public void testGetContextUrlWithMap() throws Exception {
-		request.setContextPath("foo/");
-		RequestContext context = new RequestContext(request, response, servletContext, model);
-		Map<String, Object> map = new HashMap<>();
-		map.put("foo", "bar");
-		map.put("spam", "bucket");
-		assertThat(context.getContextUrl("{foo}?spam={spam}", map)).isEqualTo("foo/bar?spam=bucket");
-	}
+    @Test
+    public void testGetContextUrlWithMap() throws Exception {
+        request.setContextPath("foo/");
+        RequestContext context = new RequestContext(request, response, servletContext, model);
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+        map.put("spam", "bucket");
+        assertThat(context.getContextUrl("{foo}?spam={spam}", map)).isEqualTo("foo/bar?spam=bucket");
+    }
 
-	@Test
-	public void testGetContextUrlWithMapEscaping() throws Exception {
-		request.setContextPath("foo/");
-		RequestContext context = new RequestContext(request, response, servletContext, model);
-		Map<String, Object> map = new HashMap<>();
-		map.put("foo", "bar baz");
-		map.put("spam", "&bucket=");
-		assertThat(context.getContextUrl("{foo}?spam={spam}", map)).isEqualTo("foo/bar%20baz?spam=%26bucket%3D");
-	}
+    @Test
+    public void testGetContextUrlWithMapEscaping() throws Exception {
+        request.setContextPath("foo/");
+        RequestContext context = new RequestContext(request, response, servletContext, model);
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar baz");
+        map.put("spam", "&bucket=");
+        assertThat(context.getContextUrl("{foo}?spam={spam}", map)).isEqualTo("foo/bar%20baz?spam=%26bucket%3D");
+    }
 
-	@Test
-	public void testPathToServlet() throws Exception {
-		request.setContextPath("/app");
-		request.setServletPath("/servlet");
-		RequestContext context = new RequestContext(request, response, servletContext, model);
+    @Test
+    public void testPathToServlet() throws Exception {
+        request.setContextPath("/app");
+        request.setServletPath("/servlet");
+        RequestContext context = new RequestContext(request, response, servletContext, model);
 
-		assertThat(context.getPathToServlet()).isEqualTo("/app/servlet");
+        assertThat(context.getPathToServlet()).isEqualTo("/app/servlet");
 
-		request.setAttribute(WebUtils.FORWARD_CONTEXT_PATH_ATTRIBUTE, "/origApp");
-		request.setAttribute(WebUtils.FORWARD_SERVLET_PATH_ATTRIBUTE, "/origServlet");
+        request.setAttribute(WebUtils.FORWARD_CONTEXT_PATH_ATTRIBUTE, "/origApp");
+        request.setAttribute(WebUtils.FORWARD_SERVLET_PATH_ATTRIBUTE, "/origServlet");
 
-		assertThat(context.getPathToServlet()).isEqualTo("/origApp/origServlet");
-	}
+        assertThat(context.getPathToServlet()).isEqualTo("/origApp/origServlet");
+    }
 
 }

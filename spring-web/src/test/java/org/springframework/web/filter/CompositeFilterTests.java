@@ -16,23 +16,15 @@
 
 package org.springframework.web.filter;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.web.testfixture.servlet.MockFilterConfig;
 import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
 import org.springframework.web.testfixture.servlet.MockHttpServletResponse;
 import org.springframework.web.testfixture.servlet.MockServletContext;
+
+import javax.servlet.*;
+import java.io.IOException;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,46 +33,46 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CompositeFilterTests {
 
-	@Test
-	public void testCompositeFilter() throws ServletException, IOException {
-		ServletContext sc = new MockServletContext();
-		MockFilter targetFilter = new MockFilter();
-		MockFilterConfig proxyConfig = new MockFilterConfig(sc);
+    @Test
+    public void testCompositeFilter() throws ServletException, IOException {
+        ServletContext sc = new MockServletContext();
+        MockFilter targetFilter = new MockFilter();
+        MockFilterConfig proxyConfig = new MockFilterConfig(sc);
 
-		CompositeFilter filterProxy = new CompositeFilter();
-		filterProxy.setFilters(Arrays.asList(targetFilter));
-		filterProxy.init(proxyConfig);
+        CompositeFilter filterProxy = new CompositeFilter();
+        filterProxy.setFilters(Arrays.asList(targetFilter));
+        filterProxy.init(proxyConfig);
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		filterProxy.doFilter(request, response, null);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filterProxy.doFilter(request, response, null);
 
-		assertThat(targetFilter.filterConfig).isNotNull();
-		assertThat(request.getAttribute("called")).isEqualTo(Boolean.TRUE);
+        assertThat(targetFilter.filterConfig).isNotNull();
+        assertThat(request.getAttribute("called")).isEqualTo(Boolean.TRUE);
 
-		filterProxy.destroy();
-		assertThat(targetFilter.filterConfig).isNull();
-	}
+        filterProxy.destroy();
+        assertThat(targetFilter.filterConfig).isNull();
+    }
 
 
-	public static class MockFilter implements Filter {
+    public static class MockFilter implements Filter {
 
-		public FilterConfig filterConfig;
+        public FilterConfig filterConfig;
 
-		@Override
-		public void init(FilterConfig filterConfig) throws ServletException {
-			this.filterConfig = filterConfig;
-		}
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+            this.filterConfig = filterConfig;
+        }
 
-		@Override
-		public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) {
-			request.setAttribute("called", Boolean.TRUE);
-		}
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) {
+            request.setAttribute("called", Boolean.TRUE);
+        }
 
-		@Override
-		public void destroy() {
-			this.filterConfig = null;
-		}
-	}
+        @Override
+        public void destroy() {
+            this.filterConfig = null;
+        }
+    }
 
 }

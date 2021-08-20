@@ -16,10 +16,7 @@
 
 package org.springframework.web.servlet.mvc.method.annotation;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -30,6 +27,8 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.method.ControllerAdviceBean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.testfixture.servlet.MockServletContext;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -42,43 +41,44 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  */
 class RequestScopedControllerAdviceIntegrationTests {
 
-	@Test // gh-23985
-	void loadContextWithRequestScopedControllerAdvice() {
-		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-		context.setServletContext(new MockServletContext());
-		context.register(Config.class);
+    @Test
+        // gh-23985
+    void loadContextWithRequestScopedControllerAdvice() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.setServletContext(new MockServletContext());
+        context.register(Config.class);
 
-		assertThatCode(context::refresh).doesNotThrowAnyException();
+        assertThatCode(context::refresh).doesNotThrowAnyException();
 
-		List<ControllerAdviceBean> adviceBeans = ControllerAdviceBean.findAnnotatedBeans(context);
-		assertThat(adviceBeans).hasSize(1);
-		assertThat(adviceBeans.get(0))//
-				.returns(RequestScopedControllerAdvice.class, ControllerAdviceBean::getBeanType)//
-				.returns(42, ControllerAdviceBean::getOrder);
+        List<ControllerAdviceBean> adviceBeans = ControllerAdviceBean.findAnnotatedBeans(context);
+        assertThat(adviceBeans).hasSize(1);
+        assertThat(adviceBeans.get(0))//
+                .returns(RequestScopedControllerAdvice.class, ControllerAdviceBean::getBeanType)//
+                .returns(42, ControllerAdviceBean::getOrder);
 
-		context.close();
-	}
+        context.close();
+    }
 
 
-	@Configuration
-	@EnableWebMvc
-	static class Config {
+    @Configuration
+    @EnableWebMvc
+    static class Config {
 
-		@Bean
-		@RequestScope
-		RequestScopedControllerAdvice requestScopedControllerAdvice() {
-			return new RequestScopedControllerAdvice();
-		}
-	}
+        @Bean
+        @RequestScope
+        RequestScopedControllerAdvice requestScopedControllerAdvice() {
+            return new RequestScopedControllerAdvice();
+        }
+    }
 
-	@ControllerAdvice
-	@Order(42)
-	static class RequestScopedControllerAdvice implements Ordered {
+    @ControllerAdvice
+    @Order(42)
+    static class RequestScopedControllerAdvice implements Ordered {
 
-		@Override
-		public int getOrder() {
-			return 99;
-		}
-	}
+        @Override
+        public int getOrder() {
+            return 99;
+        }
+    }
 
 }

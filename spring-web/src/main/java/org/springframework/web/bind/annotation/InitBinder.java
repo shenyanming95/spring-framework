@@ -16,11 +16,7 @@
 
 package org.springframework.web.bind.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Annotation that identifies methods which initialize the
@@ -38,24 +34,24 @@ import java.lang.annotation.Target;
  * or {@link java.util.Locale}, allowing to register context-specific editors.
  *
  * @author Juergen Hoeller
- * @since 2.5
  * @see org.springframework.web.bind.WebDataBinder
  * @see org.springframework.web.context.request.WebRequest
+ * @since 2.5
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface InitBinder {
 
-	/**
-	 * The names of command/form attributes and/or request parameters
-	 * that this init-binder method is supposed to apply to.
-	 * <p>Default is to apply to all command/form attributes and all request parameters
-	 * processed by the annotated handler class. Specifying model attribute names or
-	 * request parameter names here restricts the init-binder method to those specific
-	 * attributes/parameters, with different init-binder methods typically applying to
-	 * different groups of attributes or parameters.
-	 */
-	String[] value() default {};
+    /**
+     * The names of command/form attributes and/or request parameters
+     * that this init-binder method is supposed to apply to.
+     * <p>Default is to apply to all command/form attributes and all request parameters
+     * processed by the annotated handler class. Specifying model attribute names or
+     * request parameter names here restricts the init-binder method to those specific
+     * attributes/parameters, with different init-binder methods typically applying to
+     * different groups of attributes or parameters.
+     */
+    String[] value() default {};
 
 }

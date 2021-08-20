@@ -18,7 +18,6 @@ package org.springframework.test.context.junit4.spr6128;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,18 +38,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class AutowiredQualifierTests {
 
-	@Autowired
-	private String foo;
+    @Autowired
+    private String foo;
 
-	@Autowired
-	@Qualifier("customFoo")
-	private String customFoo;
+    @Autowired
+    @Qualifier("customFoo")
+    private String customFoo;
 
 
-	@Test
-	public void test() {
-		assertThat(foo).isEqualTo("normal");
-		assertThat(customFoo).isEqualTo("custom");
-	}
+    @Test
+    public void test() {
+        assertThat(foo).isEqualTo("normal");
+        assertThat(customFoo).isEqualTo("custom");
+    }
 
 }

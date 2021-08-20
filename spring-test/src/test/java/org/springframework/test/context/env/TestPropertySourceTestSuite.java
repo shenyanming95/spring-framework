@@ -22,7 +22,6 @@ import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.UseTechnicalNames;
 import org.junit.runner.RunWith;
-
 import org.springframework.test.context.TestPropertySource;
 
 /**
