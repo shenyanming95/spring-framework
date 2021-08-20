@@ -257,10 +257,13 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
     @Override
     public Resource[] getResources(String locationPattern) throws IOException {
         Assert.notNull(locationPattern, "Location pattern must not be null");
+        // 判断路径是不是以classpath*:开头的，当然这里肯定返回true
         if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
-            // a class path resource (multiple resources for same name possible)
+            // 截取路径除classpath*:后面的字符串，即：com/sym/classScan/**/*.class
+            // 使用AntPathMatcher进行路径匹配(怎么匹配要去查看Ant方式的路径匹配)，
+            // 这里也会返回true
             if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
-                // a class path resource pattern
+                // 进入单个类路径资源的扫描
                 return findPathMatchingResources(locationPattern);
             } else {
                 // all class path resources with the given name
@@ -467,13 +470,19 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
      * @see org.springframework.util.PathMatcher
      */
     protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+        // 截取参数指定的路径, 求出根目录地, 类似：classpath*:com/sym/classScan/
         String rootDirPath = determineRootDir(locationPattern);
+        // 获取子目录地址：**/*.class
         String subPattern = locationPattern.substring(rootDirPath.length());
+        // 跳转到第④⑤⑥步进行扫描，返回该相对路径下的所有绝对路径地址（即磁盘上的地址）
         Resource[] rootDirResources = getResources(rootDirPath);
+        // 然后就是遍历该绝对路径地址，依次找出该目录下的所有资源
         Set<Resource> result = new LinkedHashSet<>(16);
         for (Resource rootDirResource : rootDirResources) {
+            // 处理 Resource 对象, 默认直接返回
             rootDirResource = resolveRootDirResource(rootDirResource);
             URL rootDirUrl = rootDirResource.getURL();
+            //反射的Method，此时为Null
             if (equinoxResolveMethod != null && rootDirUrl.getProtocol().startsWith("bundle")) {
                 URL resolvedUrl = (URL) ReflectionUtils.invokeMethod(equinoxResolveMethod, null, rootDirUrl);
                 if (resolvedUrl != null) {
@@ -481,11 +490,16 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
                 }
                 rootDirResource = new UrlResource(rootDirUrl);
             }
+            // 如果 URL 是vfs类型( virtual file system, 虚拟文件系统)
             if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
                 result.addAll(VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, getPathMatcher()));
-            } else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
+            }
+            //如果是jar类型
+            else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
                 result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
             } else {
+                // 既不属于vfs又不属于jar的其它类型URL(一般是file协议)则会加载旗下所有文件file
+                // 接着调用doFindPathMatchingFileResources()执行1.2.2阶段, 封装Resource对象
                 result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
             }
         }

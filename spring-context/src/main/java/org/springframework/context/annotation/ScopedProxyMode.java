@@ -30,13 +30,12 @@ package org.springframework.context.annotation;
 public enum ScopedProxyMode {
 
     /**
-     * Default typically equals {@link #NO}, unless a different default
-     * has been configured at the component-scan instruction level.
+     * 除非在组件扫描设置了不同的默认值，否则此选项等同于下面的No模式
      */
     DEFAULT,
 
     /**
-     * Do not create a scoped proxy.
+     * 不会创建任何代理
      * <p>This proxy-mode is not typically useful when used with a
      * non-singleton scoped instance, which should favor the use of the
      * {@link #INTERFACES} or {@link #TARGET_CLASS} proxy-modes instead if it
@@ -45,13 +44,12 @@ public enum ScopedProxyMode {
     NO,
 
     /**
-     * Create a JDK dynamic proxy implementing <i>all</i> interfaces exposed by
-     * the class of the target object.
+     * 创建JDK动态代理，基于接口
      */
     INTERFACES,
 
     /**
-     * Create a class-based proxy (uses CGLIB).
+     * 创建CGLIB动态代理，基于类
      */
     TARGET_CLASS
 
