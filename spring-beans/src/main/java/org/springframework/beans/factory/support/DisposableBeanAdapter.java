@@ -352,6 +352,8 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
                     throw (InvocationTargetException) pax.getException();
                 }
             } else {
+                // spring同样在这里做了Java安全管理器机制的判断, 这边也省略掉...
+                // 先将Method对象设置为可访问级别, 然后反射回调方法
                 ReflectionUtils.makeAccessible(destroyMethod);
                 destroyMethod.invoke(this.bean, args);
             }

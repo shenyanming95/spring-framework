@@ -844,16 +844,27 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
         // Iterate over a copy to allow for init methods which in turn register new bean definitions.
         // While this may not be part of the regular factory bootstrap, it does otherwise work fine.
+        // this.beanDefinitionNames是spring类扫描阶段获取到的注册顺序中的bean定义名称列表
         List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
-        // Trigger initialization of all non-lazy singleton beans...
+        // 触发所有非懒加载的单例Bean的初始化  返回合并的RootBeanDefinition
         for (String beanName : beanNames) {
+            // 将bean定义名称合并返回一个RootBeanDefinition（只有存在子Bean，才会有合并）
             RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
             if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+                // 当一个类实现了FactoryBean接口，表明它是一个工厂，用来创建普通组件Bean的
+                // 例如：mybatis与spring结合时，就会创建MapperFactoryBean，
+                // 然后由它来创建Mapper接口代理类，所以mybatis的mapper接口就会走这个方法...
                 if (isFactoryBean(beanName)) {
+                    // 创建FactoryBean对象，注意这边会加一个前缀FACTORY_BEAN_PREFIX,它的值为&
                     Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
                     if (bean instanceof FactoryBean) {
                         FactoryBean<?> factory = (FactoryBean<?>) bean;
+                        // 这个变量是为了区分普通的FactoryBean和SmartFactoryBean.
+                        // 一般的FactoryBean，都是在真正需要(即调用getBean())时，才会调用接口的
+                        // getObject()方法，获取工厂创建出来的Bean；而SmartFactoryBean与其相反
+                        // 它很饥渴，饥渴到在创建它自身的同时，就要获取它能创建出来的Bean组件
+                        // (这里源码做过简化处理，spring在这边加了SecurityManager安全判断)
                         boolean isEagerInit;
                         if (System.getSecurityManager() != null && factory instanceof SmartFactoryBean) {
                             isEagerInit = AccessController.doPrivileged(
@@ -868,12 +879,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
                         }
                     }
                 } else {
+                    // 如果当前要创建的Bean对象不是一个工厂对象，则会调用AbstractBeanFactory
+                    // 的getBean()方法，一般自定义的组件都会到这里，通过此方法创建
                     getBean(beanName);
                 }
             }
         }
 
-        // Trigger post-initialization callback for all applicable beans...
+        // 对实现了SmartInitializingSingleton接口的Bean进行后初始化回调.
         for (String beanName : beanNames) {
             Object singletonInstance = getSingleton(beanName);
             if (singletonInstance instanceof SmartInitializingSingleton) {
