@@ -1,6 +1,6 @@
 
 
-![](/Users/shenyanming/Desktop/logo.png)
+![](./logo.png)
 
 
 
@@ -27,7 +27,7 @@
 
 **可能出现的问题**
 
-在导入到 IDEA 中，会自动进行 gradle build，但是由于 IDEA gradle 插件的版本原因，可能会出现如下问题：
+在导入到 IDEA 中，会自动进行 gradle build，但是由于 IDEA gradle 插件的版本原因，可能会出现如下问题。如果 IDEA 不是2019.03版本，根据实际版本选择适当的 gradle 版本即可
 
 ```java
 exception during working with external system: java.lang.AssertionError
