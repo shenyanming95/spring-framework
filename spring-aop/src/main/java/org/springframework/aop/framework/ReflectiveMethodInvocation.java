@@ -153,13 +153,24 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
     @Override
     @Nullable
     public Object proceed() throws Throwable {
-        // We start with an index of -1 and increment early.
+        // currentInterceptorIndex是ReflectiveMethodInvocation的成员变量, 默认为-1.
+        // interceptorsAndDynamicMethodMatchers就是上一步获取到的拦截器链. 它在这里就相当于
+        // Servlet的过滤器链一样, 通过下标一个一个地调用链上的过滤器. 同理, 这边也是将
+        // currentInterceptorIndex当成方法拦截器链的下标, 一个一个调用. 当执行到最后一个拦截器
+        // 时, 调用invokeJoinPoint(), 执行目标方法. 达到先执行后返回的效果, 所以最晚执行的是原
+        // 方法, 但它是整个递归调用的最快返回.
         if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+            // 当下标值等于集合size-1, 表示执行完所有拦截器, 就会回调原方法; jdk代理使用
+            // 使用ReflectiveMethodInvocation.invokeJoinpoint(); cglib代理使用
+            // CglibAopProxy.invokeJoinpoint();  -- 标准的多态
             return invokeJoinpoint();
         }
-
+        // 每次先将下标+1, 然后取出链上的拦截器
         Object interceptorOrInterceptionAdvice =
                 this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+        //通过拦截器链生成的分析, 若一个通知Advice的切入点表达式携带了参数, 它就会被包装成
+        // InterceptorAndDynamicMethodMatcher类型, 走这个if语句块. 取出它的方法匹配器
+        // MethodMatcher, 若能匹配则取出它的拦截器Interceptor回调
         if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
             // Evaluate dynamic method matcher here: static part will already have
             // been evaluated and found to match.
@@ -169,13 +180,17 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
             if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
                 return dm.interceptor.invoke(this);
             } else {
-                // Dynamic matching failed.
-                // Skip this interceptor and invoke the next in the chain.
+                // 若方法匹配失败, 则当前拦截器就会被跳过,  并调用链中的下一个拦截器
                 return proceed();
             }
         } else {
-            // It's an interceptor, so we just invoke it: The pointcut will have
-            // been evaluated statically before this object was constructed.
+            // 如果切入点表达式不带参数, 就走这个语句块.
+            // 之前分析获取拦截器链时, 知道spring是将通知Advice适配成MethodInterceprot, 所以
+            // 强转成MethodInterceptor并直接调用它的invoke()方法. 由于srping在构造一个类的
+            // 增强器时, 都会先加入DefaultPointcutAdvisor对象, 所以在构造拦截器链时, 都会在链
+            // 上的首个元素, 适配成ExposeInvocationInterceptor, 它的作用就是将当前对象, 也就是
+            // ReflectiveMethodInvocation或CglibMethodInvocation, 保存到ThreadLocal中去,
+            // 效果就是在当前线程中共享此对象. 参数this指的是：ReflectiveMethodInvocation
             return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
         }
     }

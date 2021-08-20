@@ -52,7 +52,14 @@ public class MethodBeforeAdviceInterceptor implements MethodInterceptor, BeforeA
 
     @Override
     public Object invoke(MethodInvocation mi) throws Throwable {
+        // 先执行前置通知方法
         this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
+        // 再回调proceed()方法, 这边回调就是去执行被代理类原方法了...
+        // 原方法执行后, 这边就可以获取到原方法返回值, 它就变成第一个返回的, 返回到拦截器链的
+        // 上一个拦截器：如果有环绕通知, 就会返回到环绕通知; 如果没有环绕通知, 就会返回到最终
+        // 通知AspectJAfterAdvice
+        // ...
+        // 以此类推, 直至返回到拦截器链上的首个元素ExposeInvocationInterceptor
         return mi.proceed();
     }
 

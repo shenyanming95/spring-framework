@@ -90,11 +90,14 @@ public final class ExposeInvocationInterceptor implements MethodInterceptor, Pri
 
     @Override
     public Object invoke(MethodInvocation mi) throws Throwable {
+        // 它就是将当前的 ReflectiveMethodInvocation保存到ThreadLocal中, 相当于共享出来
         MethodInvocation oldInvocation = invocation.get();
         invocation.set(mi);
         try {
+            //再调用proceed()方法
             return mi.proceed();
         } finally {
+            // 按照递归的思想, 方法第一个调用的, 结果最后一个返回, 所以spring在这边将ThreadLocal还原回去....
             invocation.set(oldInvocation);
         }
     }

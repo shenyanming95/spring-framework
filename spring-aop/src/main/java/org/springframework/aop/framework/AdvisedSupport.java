@@ -475,9 +475,15 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
      * @return a List of MethodInterceptors (may also include InterceptorAndDynamicMethodMatchers)
      */
     public List<Object> getInterceptorsAndDynamicInterceptionAdvice(Method method, @Nullable Class<?> targetClass) {
+        // MethodCacheKey其实就是封装了Method对象和它的hashCode值
         MethodCacheKey cacheKey = new MethodCacheKey(method);
+        // 这里需要注意一点：methodCache是一个ConcurrentHashMap, 它是存放在AdvisedSupport里
+        // 且作为一个成员变量. 因此每个AdvisedSupport 实例都有自己的缓存, 之前分析过在
+        // createProxy()方法中, 符合AOP条件的每个Bean实例都会创建一个ProxyFactory, 它就是
+        // AdvisedSupport的实现类
         List<Object> cached = this.methodCache.get(cacheKey);
         if (cached == null) {
+            // 如果缓存为空, 则调用AdvisorChainFactory来生成拦截器链
             cached = this.advisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice(
                     this, method, targetClass);
             this.methodCache.put(cacheKey, cached);

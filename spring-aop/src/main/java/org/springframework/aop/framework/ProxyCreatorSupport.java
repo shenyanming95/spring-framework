@@ -104,6 +104,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
         if (!this.active) {
             activate();
         }
+        // 调用getAopProxyFactory()返回一个AopProxyFactory, 默认为DefaultAopProxyFactory
         return getAopProxyFactory().createAopProxy(this);
     }
 

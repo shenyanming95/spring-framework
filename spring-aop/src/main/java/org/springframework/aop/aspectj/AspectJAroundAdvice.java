@@ -63,9 +63,11 @@ public class AspectJAroundAdvice extends AbstractAspectJAdvice implements Method
         if (!(mi instanceof ProxyMethodInvocation)) {
             throw new IllegalStateException("MethodInvocation is not a Spring ProxyMethodInvocation: " + mi);
         }
+        // 封装方法签名
         ProxyMethodInvocation pmi = (ProxyMethodInvocation) mi;
         ProceedingJoinPoint pjp = lazyGetProceedingJoinPoint(pmi);
         JoinPointMatch jpm = getJoinPointMatch(pmi);
+        // 直接调用环绕通知的方法
         return invokeAdviceMethod(pjp, jpm, null, null);
     }
 

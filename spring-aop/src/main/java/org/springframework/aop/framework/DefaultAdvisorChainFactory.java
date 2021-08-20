@@ -61,30 +61,43 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
     public List<Object> getInterceptorsAndDynamicInterceptionAdvice(
             Advised config, Method method, @Nullable Class<?> targetClass) {
 
-        // This is somewhat tricky... We have to process introductions first,
-        // but we need to preserve order in the ultimate list.
+        // 获取Advisor适配器的注册接口, 默认实现类：DefaultAdvisorAdapterRegistry
         AdvisorAdapterRegistry registry = GlobalAdvisorAdapterRegistry.getInstance();
         Advisor[] advisors = config.getAdvisors();
+        // 参数config就是ProxyFactory, 从它身上先获取目标类(被代理类)所有的增强器
+        // 然后创建列表 interceptorList, 它就是方法要返回的对象
         List<Object> interceptorList = new ArrayList<>(advisors.length);
+        // 获取被代理类的Class对象
         Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
         Boolean hasIntroductions = null;
-
+        // 遍历所有的增强器, 通过AdvisorAdapterRegistry接口, 将增强器适配成 org.aopalliance.intercept.MethodInterceptor类
         for (Advisor advisor : advisors) {
+            // 若增强器属于切入点增强器. 我们常用的通知都是属于这种类型的增强器
             if (advisor instanceof PointcutAdvisor) {
                 // Add it conditionally.
                 PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
+                // 若aop配置类AdvisedSupport(即变量config)有预先过滤; 或者切入点能匹配上当前的Class类型
                 if (config.isPreFiltered() || pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
+                    // 获取方法匹配器, 判断能否匹配上当前执行的方法Method
                     MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
                     boolean match;
                     if (mm instanceof IntroductionAwareMethodMatcher) {
                         if (hasIntroductions == null) {
                             hasIntroductions = hasMatchingIntroductions(advisors, actualClass);
                         }
+                        // 切入点的方法匹配器实现是：AspectJExpressionPointcut, 在设置切点的时候可
+                        // 以用切点语言来更加精确的表示拦截哪个方法.如果切入点表达式携带了方法参数,
+                        // 例如：execution(* com.sym.saveStudent(..)) && args(id,name)
+                        // 它的isRuntime()方法就会返回true, spring就会把拦截器interceptor和方法
+                        // 匹配器MethodMatcher重新包装成InterceptorAndDynamicMethodMatcher对象
                         match = ((IntroductionAwareMethodMatcher) mm).matches(method, actualClass, hasIntroductions);
                     } else {
                         match = mm.matches(method, actualClass);
                     }
                     if (match) {
+                        // 调用增强器适配器AdvisorAdapterRegistry, 将增强器适配成MethodInterceptor.
+                        // 这里会选取合适的AdvisorAdapter接口, 去适配增强器advisor. 如果有多个
+                        // AdvisorAdapter能适配上此增强器, 就会返回多个MethodInterceptor
                         MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
                         if (mm.isRuntime()) {
                             // Creating a new object instance in the getInterceptors() method
@@ -93,17 +106,22 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
                                 interceptorList.add(new InterceptorAndDynamicMethodMatcher(interceptor, mm));
                             }
                         } else {
+                            // 如果切入点表达式没加方法参数, 就直接添加到返回集合中
                             interceptorList.addAll(Arrays.asList(interceptors));
                         }
                     }
                 }
-            } else if (advisor instanceof IntroductionAdvisor) {
+            }
+            // 如果增强器是 IntroductionAdvisor 类型
+            else if (advisor instanceof IntroductionAdvisor) {
                 IntroductionAdvisor ia = (IntroductionAdvisor) advisor;
                 if (config.isPreFiltered() || ia.getClassFilter().matches(actualClass)) {
                     Interceptor[] interceptors = registry.getInterceptors(advisor);
                     interceptorList.addAll(Arrays.asList(interceptors));
                 }
-            } else {
+            }
+            // 增强器是其它类型的
+            else {
                 Interceptor[] interceptors = registry.getInterceptors(advisor);
                 interceptorList.addAll(Arrays.asList(interceptors));
             }

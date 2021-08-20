@@ -234,12 +234,20 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+        // 一般的beanName都是返回原值, 但如果该Bean是FactoryBean类型, 会加个前缀“&”后返回
         Object cacheKey = getCacheKey(beanClass, beanName);
 
+        // targetSourcedBeans 是指有自定义目标源的Bean, 一般这个集合为空集合
         if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+            // advisedBeans是一个Map, key为beanName的值, value为布尔值; 它保存了所有已被
+            // 增强过的Bean; 当一个Bean被增强完后, 它的value值为true, 反之为false
             if (this.advisedBeans.containsKey(cacheKey)) {
                 return null;
             }
+            // 先判断当前Bean是否属于AOP基本类型, 源码在isInfrastructureClass()
+            // 再判断当前Bean是否可以被跳过, 源码在shouldSkip()
+            // 如果当前Bean为切面就会被放置到此Map中, value值为false, 意味它没被增强
+            // (实际上切面本身就不需要被增强)
             if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
                 this.advisedBeans.put(cacheKey, Boolean.FALSE);
                 return null;
@@ -249,6 +257,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
         // Create proxy here if we have a custom TargetSource.
         // Suppresses unnecessary default instantiation of the target bean:
         // The TargetSource will handle target instances in a custom fashion.
+        // 如果当前Bean有自定义的目标源, 就会在这里创建它的代理对象, 一般AOP是没有的.可以省略
         TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
         if (targetSource != null) {
             if (StringUtils.hasLength(beanName)) {
@@ -259,7 +268,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
             this.proxyTypes.put(cacheKey, proxy.getClass());
             return proxy;
         }
-
+        // 最终方法返回null
         return null;
     }
 
@@ -288,6 +297,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
         if (bean != null) {
             Object cacheKey = getCacheKey(bean.getClass(), beanName);
+            // 集合earlyProxyReferences是指提前曝光的Bean实例, 一般用来解决循环依赖的.
+            // 如果Bean被提前曝光了, 它就一定在这个集合里并且已经执行完wrapIfNecessary()方法
+            // (源码在：AbstractAutoProxyCreator – 232行)如果Bean未提前曝光, 则调用wrapIfNecessary())
             if (this.earlyProxyReferences.remove(cacheKey) != bean) {
                 return wrapIfNecessary(bean, beanName, cacheKey);
             }
@@ -326,27 +338,44 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
      * @return a proxy wrapping the bean, or the raw bean instance as-is
      */
     protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
+        // 如果当前Bean有自定义目标源, 直接返回Bean
         if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
             return bean;
         }
+        // 如果当前Bean已经处理过(即被添加到advisedBeans中), 直接返回Bean
         if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
             return bean;
         }
+        // 与postProcessBeforeInstantiation()判断一样, 若当前Bean是切面, 将它添加到集合中, 然后直接返回Bean
         if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
             this.advisedBeans.put(cacheKey, Boolean.FALSE);
             return bean;
         }
 
-        // Create proxy if we have advice.
+        /*
+         * 普通类就可以执行到这里, 因为普通类才需要做代理, 切面类不需要, 它仅仅是定义通知方法
+         * 下面的代码就是为增强通知的普通类构造代理对象..
+         */
+
+        // 获取当前Bean需要的所有增强器(即切入点表达式能作用到当前Bean的所有增强方法)
+        // 它首先会找到BeanFactory内的所有增强器, 然后根据切入点Pointcut的表达式,
+        // 来匹配增强器是否可以作用于当前Bean, 若匹配将此增强器保存到集合, 最后将集合排序
+        // 转换成数组后返回(数组内的元素一般是InstantiationModelAwarePointcutAdvisorImpl)
         Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+        // 如果当前Bean有增强器, 那么就给它创建代理对象
         if (specificInterceptors != DO_NOT_PROXY) {
+            // 将当前Bean保存到advisedBeans中, 表示它已经被增强过了(区别前面看到的值为False)
             this.advisedBeans.put(cacheKey, Boolean.TRUE);
+            // 重要步骤：为当前Bean创建代理对象
             Object proxy = createProxy(
                     bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
             this.proxyTypes.put(cacheKey, proxy.getClass());
+            // 方法返回的是代理对象, 区别于下面返回的原Bean, 意味着在当前Bean在
+            // IOC容器中保存的是代理对象, 而不再是我们在代码里定义的类
             return proxy;
         }
-
+        // 如果当前Bean没有任何增强器与其匹配, 则它就不需要被增强, 加入到缓存中, 其值为False.
+        // 本方法直接返回原Bean
         this.advisedBeans.put(cacheKey, Boolean.FALSE);
         return bean;
     }
@@ -365,6 +394,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
      * @see #shouldSkip
      */
     protected boolean isInfrastructureClass(Class<?> beanClass) {
+        // 判断当前Bean是不是属于AOP基本类型, 即是否有实现：Advice、Pointcut、Advisor
+        // 和AopInfrastructureBean
         boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
                 Pointcut.class.isAssignableFrom(beanClass) ||
                 Advisor.class.isAssignableFrom(beanClass) ||
@@ -443,10 +474,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
         if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
             AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
         }
-
+        // 创建代理工厂, 并从当前对象拷贝部分变量的值, this指AnnotationAwareAspectJAutoProxyCreator
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.copyFrom(this);
 
+        // 暂时不知道这操作为了啥???
         if (!proxyFactory.isProxyTargetClass()) {
             if (shouldProxyTargetClass(beanClass, beanName)) {
                 proxyFactory.setProxyTargetClass(true);
@@ -454,17 +486,22 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
                 evaluateProxyInterfaces(beanClass, proxyFactory);
             }
         }
-
+        // 将拦截器(当前类型为Object)适配成增强器Advisor类型, 通过使用AdvisorAdapterRegistry
+        // 来包装, 如果拦截器已经是Advisor类型直接返回, 其它情况必须保证是
+        // org.aopalliance.aop.Advice类型, spring会用DefaultPointcutAdvisor包裹后返回.
         Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+        // 将上面的增强器保存在代理工厂proxyFactory
         proxyFactory.addAdvisors(advisors);
+        // targetSource 实际类型为SingletonTargetSource, 它里面保存着被增强类的对象实例, 准备为它创建代理对象
         proxyFactory.setTargetSource(targetSource);
+        // AOP扩展, 留给子类实现, 用来自定义渲染proxyFactory, 默认什么都不做
         customizeProxyFactory(proxyFactory);
 
         proxyFactory.setFrozen(this.freezeProxy);
         if (advisorsPreFiltered()) {
             proxyFactory.setPreFiltered(true);
         }
-
+        // 调用ProxyFactory的getProxy()方法
         return proxyFactory.getProxy(getProxyClassLoader());
     }
 
