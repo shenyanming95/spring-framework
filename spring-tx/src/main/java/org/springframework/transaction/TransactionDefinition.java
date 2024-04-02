@@ -19,54 +19,34 @@ package org.springframework.transaction;
 import org.springframework.lang.Nullable;
 
 /**
- * Interface that defines Spring-compliant transaction properties.
- * Based on the propagation behavior definitions analogous to EJB CMT attributes.
+ * 定义符合 spring 的事务属性的接口.
+ * 只有启动一个实际的新事务, 才会应用隔离级别和超时设置. 由于只有{@link #PROPAGATION_REQUIRED}、
+ * {@link #PROPAGATION_REQUIRES_NEW}和{@link #PROPAGATION_NESTED}会导致这种情况, 因此
+ * 在其它隔离级别指定这些设置没有作用, 而且并非所有事务管理器都支持这些高级功能, 因此在给定非默认值时可能会引发相应的异常.
+ * <p>
+ * {@link #isReadOnly()} 适用于任何事务上下文, 无论是由实际资源事务支持还是在资源级别进行非事务操作.
+ * 在后一种情况下, 该标志仅适用于应用程序内的托管资源, 例如 Hibernate {@code Session}
  *
- * <p>Note that isolation level and timeout settings will not get applied unless
- * an actual new transaction gets started. As only {@link #PROPAGATION_REQUIRED},
- * {@link #PROPAGATION_REQUIRES_NEW} and {@link #PROPAGATION_NESTED} can cause
- * that, it usually doesn't make sense to specify those settings in other cases.
- * Furthermore, be aware that not all transaction managers will support those
- * advanced features and thus might throw corresponding exceptions when given
- * non-default values.
- *
- * <p>The {@link #isReadOnly() read-only flag} applies to any transaction context,
- * whether backed by an actual resource transaction or operating non-transactionally
- * at the resource level. In the latter case, the flag will only apply to managed
- * resources within the application, such as a Hibernate {@code Session}.
- *
- * @author Juergen Hoeller
  * @see PlatformTransactionManager#getTransaction(TransactionDefinition)
  * @see org.springframework.transaction.support.DefaultTransactionDefinition
  * @see org.springframework.transaction.interceptor.TransactionAttribute
- * @since 08.05.2003
  */
 public interface TransactionDefinition {
 
     /**
-     * Support a current transaction; create a new one if none exists.
-     * Analogous to the EJB transaction attribute of the same name.
-     * <p>This is typically the default setting of a transaction definition,
-     * and typically defines a transaction synchronization scope.
+     * 当前有事务就用当前的, 没有就创建一个新的.
      */
     int PROPAGATION_REQUIRED = 0;
 
     /**
-     * Support a current transaction; execute non-transactionally if none exists.
-     * Analogous to the EJB transaction attribute of the same name.
-     * <p><b>NOTE:</b> For transaction managers with transaction synchronization,
-     * {@code PROPAGATION_SUPPORTS} is slightly different from no transaction
-     * at all, as it defines a transaction scope that synchronization might apply to.
-     * As a consequence, the same resources (a JDBC {@code Connection}, a
-     * Hibernate {@code Session}, etc) will be shared for the entire specified
-     * scope. Note that the exact behavior depends on the actual synchronization
-     * configuration of the transaction manager!
-     * <p>In general, use {@code PROPAGATION_SUPPORTS} with care! In particular, do
-     * not rely on {@code PROPAGATION_REQUIRED} or {@code PROPAGATION_REQUIRES_NEW}
-     * <i>within</i> a {@code PROPAGATION_SUPPORTS} scope (which may lead to
-     * synchronization conflicts at runtime). If such nesting is unavoidable, make sure
-     * to configure your transaction manager appropriately (typically switching to
-     * "synchronization on actual transaction").
+     * 支持当前事务, 如果当前事务不存在则以非事务的方式执行.
+     * 注意: 对于具有事务同步的事务管理器(transaction managers), {@code PROPAGATION_SUPPORTS}与根本没有事务的方式不同,
+     * 因为定义同步可能适用的事务范围, 因此相同的资源（JDBC Connection 、 Hibernate Session等）将在整个指定范围内共享, 即
+     * 实际的执行情况取决于事务管理器的实际同步配置.
+     * <p>
+     * spring不推荐我们使用{@code PROPAGATION_SUPPORTS} 特别不要依赖 {@code PROPAGATION_SUPPORTS} 范围内的 {@code PROPAGATION_REQUIRED}、
+     * {@code PROPAGATION_REQUIRES_NEW} 可能会导致运行时同步冲突; 如果一定要这样配置, 确保正确配置事务管理器, 通常切换到“实际事务同步”
+     * (synchronization on actual transaction)
      *
      * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#setTransactionSynchronization
      * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#SYNCHRONIZATION_ON_ACTUAL_TRANSACTION
@@ -74,62 +54,45 @@ public interface TransactionDefinition {
     int PROPAGATION_SUPPORTS = 1;
 
     /**
-     * Support a current transaction; throw an exception if no current transaction
-     * exists. Analogous to the EJB transaction attribute of the same name.
-     * <p>Note that transaction synchronization within a {@code PROPAGATION_MANDATORY}
-     * scope will always be driven by the surrounding transaction.
+     * 当前一定要有事务, 如果没有则抛异常
      */
     int PROPAGATION_MANDATORY = 2;
 
     /**
-     * Create a new transaction, suspending the current transaction if one exists.
-     * Analogous to the EJB transaction attribute of the same name.
-     * <p><b>NOTE:</b> Actual transaction suspension will not work out-of-the-box
-     * on all transaction managers. This in particular applies to
-     * {@link org.springframework.transaction.jta.JtaTransactionManager},
-     * which requires the {@code javax.transaction.TransactionManager} to be
-     * made available it to it (which is server-specific in standard Java EE).
-     * <p>A {@code PROPAGATION_REQUIRES_NEW} scope always defines its own
-     * transaction synchronizations. Existing synchronizations will be suspended
-     * and resumed appropriately.
+     * 不管当前是否存在事务, 都会新创建一个事务, 若存在当前事务则挂起当前事务, 已存在的被挂起的事务在适当时恢复.
+     * 注意: 当前事务挂起, 并不是所有事务管理器都支持的; {@code PROPAGATION_REQUIRES_NEW} 特别适用于
+     * {@code javax.transaction.TransactionManager}
      *
      * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
      */
     int PROPAGATION_REQUIRES_NEW = 3;
 
+
     /**
-     * Do not support a current transaction; rather always execute non-transactionally.
-     * Analogous to the EJB transaction attribute of the same name.
-     * <p><b>NOTE:</b> Actual transaction suspension will not work out-of-the-box
-     * on all transaction managers. This in particular applies to
-     * {@link org.springframework.transaction.jta.JtaTransactionManager},
-     * which requires the {@code javax.transaction.TransactionManager} to be
-     * made available it to it (which is server-specific in standard Java EE).
-     * <p>Note that transaction synchronization is <i>not</i> available within a
-     * {@code PROPAGATION_NOT_SUPPORTED} scope. Existing synchronizations
-     * will be suspended and resumed appropriately.
+     * 不支持事务, 以非事务的方式执行. 如果当前存在事务, 那么也会以非事务的方式执行.
+     * 注意事务同步在 {@code PROPAGATION_NOT_SUPPORTED} 范围内不可用, 若当前
+     * 有同步, 则会将当前同步暂停并适当恢复.
      *
      * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
      */
     int PROPAGATION_NOT_SUPPORTED = 4;
 
+
     /**
-     * Do not support a current transaction; throw an exception if a current transaction
-     * exists. Analogous to the EJB transaction attribute of the same name.
-     * <p>Note that transaction synchronization is <i>not</i> available within a
-     * {@code PROPAGATION_NEVER} scope.
+     * 不支持事务, 若当前存在事务, 则抛出异常.
+     * 注意: 事务同步在{@code PROPAGATION_NEVER}范围内不可用.
      */
     int PROPAGATION_NEVER = 5;
 
+
     /**
-     * Execute within a nested transaction if a current transaction exists,
-     * behave like {@link #PROPAGATION_REQUIRED} otherwise. There is no
-     * analogous feature in EJB.
-     * <p><b>NOTE:</b> Actual creation of a nested transaction will only work on
-     * specific transaction managers. Out of the box, this only applies to the JDBC
-     * {@link org.springframework.jdbc.datasource.DataSourceTransactionManager}
-     * when working on a JDBC 3.0 driver. Some JTA providers might support
-     * nested transactions as well.
+     * 如果当前有事务, 则在上下文中参加一个嵌套事务, 嵌套事务的执行受到外部事务的影响,
+     * 但嵌套事务的提交或回滚不影响外部事务; 如果当前没有事务, 则新起一个事务, 此时
+     * 等价于 {@link #PROPAGATION_REQUIRED}.
+     * <p>
+     * 注意: 嵌套事务适用于特定的事务管理器, 开箱即用仅适用于 JDBC 3.0 驱动程序的
+     * {@link org.springframework.jdbc.datasource.DataSourceTransactionManager},
+     * 一些 JTA 提供程序也可能支持嵌套事务。
      *
      * @see org.springframework.jdbc.datasource.DataSourceTransactionManager
      */
@@ -137,56 +100,39 @@ public interface TransactionDefinition {
 
 
     /**
-     * Use the default isolation level of the underlying datastore.
-     * All other levels correspond to the JDBC isolation levels.
+     * 事务的默认隔离级别, 在使用该隔离级别时, 事务管理器将根据底层数据源的默认隔离级别来确定事务的隔离级别.
      *
      * @see java.sql.Connection
      */
     int ISOLATION_DEFAULT = -1;
 
     /**
-     * Indicates that dirty reads, non-repeatable reads and phantom reads
-     * can occur.
-     * <p>This level allows a row changed by one transaction to be read by another
-     * transaction before any changes in that row have been committed (a "dirty read").
-     * If any of the changes are rolled back, the second transaction will have
-     * retrieved an invalid row.
+     * 事务的最低隔离级别, 可能发生脏读、不可重复读和幻读.
+     * 此级别允许在提交该行中的任何更改之前由一个事务更改的行由另一个事务读取(脏读), 如果回滚任何更改, 第二个事务将检索到无效行.
      *
      * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
      */
     int ISOLATION_READ_UNCOMMITTED = 1;  // same as java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
 
     /**
-     * Indicates that dirty reads are prevented; non-repeatable reads and
-     * phantom reads can occur.
-     * <p>This level only prohibits a transaction from reading a row
-     * with uncommitted changes in it.
+     * 事务只能读取其它事务提交的数据, 可以防止脏读, 但是可能出现不可重复读、幻读;
      *
      * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
      */
     int ISOLATION_READ_COMMITTED = 2;  // same as java.sql.Connection.TRANSACTION_READ_COMMITTED;
 
     /**
-     * Indicates that dirty reads and non-repeatable reads are prevented;
-     * phantom reads can occur.
-     * <p>This level prohibits a transaction from reading a row with uncommitted changes
-     * in it, and it also prohibits the situation where one transaction reads a row,
-     * a second transaction alters the row, and the first transaction re-reads the row,
-     * getting different values the second time (a "non-repeatable read").
+     * 事务执行期间可以保持前后一致性, 能够防止脏读和不可重复读, 但是可能出现幻读.
+     * (其他事务在当前事务执行期间可能会插入新的数据，导致事务在后续读取时发现了新增的数据)
      *
      * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
      */
     int ISOLATION_REPEATABLE_READ = 4;  // same as java.sql.Connection.TRANSACTION_REPEATABLE_READ;
 
     /**
-     * Indicates that dirty reads, non-repeatable reads and phantom reads
-     * are prevented.
-     * <p>This level includes the prohibitions in {@link #ISOLATION_REPEATABLE_READ}
-     * and further prohibits the situation where one transaction reads all rows that
-     * satisfy a {@code WHERE} condition, a second transaction inserts a row
-     * that satisfies that {@code WHERE} condition, and the first transaction
-     * re-reads for the same condition, retrieving the additional "phantom" row
-     * in the second read.
+     * 事务的最高隔离级别, 通过事务提交的串行化, 来防止脏读、不可重复读和幻读.
+     * 当一个事务需要访问某些资源时, 会尝试获取相应的锁, 如果资源已经被其他事务持有了相应的锁,
+     * 那么当前事务可能会被阻塞, 直到其他事务释放了锁. 因此会降低数据库的并发性.
      *
      * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
      */
@@ -194,8 +140,7 @@ public interface TransactionDefinition {
 
 
     /**
-     * Use the default timeout of the underlying transaction system,
-     * or none if timeouts are not supported.
+     * 使用底层事务系统的默认超时, 如果不支持超时则不使用。
      */
     int TIMEOUT_DEFAULT = -1;
 

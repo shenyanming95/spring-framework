@@ -17,12 +17,10 @@
 package org.springframework.transaction;
 
 /**
- * Marker interface for Spring transaction manager implementations,
- * either traditional or reactive.
+ * Spring 事务管理器实现的标记接口, 无论是传统的还是反应式的.
  *
- * @author Juergen Hoeller
- * @see PlatformTransactionManager
- * @see ReactiveTransactionManager
+ * @see PlatformTransactionManager 传统的
+ * @see ReactiveTransactionManager 反应式
  * @since 5.2
  */
 public interface TransactionManager {

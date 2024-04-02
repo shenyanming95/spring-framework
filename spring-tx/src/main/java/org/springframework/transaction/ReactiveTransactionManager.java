@@ -20,10 +20,8 @@ import org.springframework.lang.Nullable;
 import reactor.core.publisher.Mono;
 
 /**
- * This is the central interface in Spring's reactive transaction infrastructure.
- * Applications can use this directly, but it is not primarily meant as an API:
- * Typically, applications will work with either transactional operators or
- * declarative transaction demarcation through AOP.
+ * spring 用于响应式编程(Reactive Programming)环境下的事务管理器接口, 应用程序可以直接使用它, 但它主要不是作为 API 被使用,
+ * 通常, 应用程序将通过 AOP 使用事务运算符或声明性事务工作.
  *
  * @author Mark Paluch
  * @author Juergen Hoeller
