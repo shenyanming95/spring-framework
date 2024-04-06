@@ -20,25 +20,12 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.*;
 
 /**
- * Abstract base implementation of the
- * {@link org.springframework.transaction.TransactionStatus} interface.
+ * {@link TransactionStatus} 接口的抽象实现, 预实现对本地“仅回滚”和“已完成”标志的处理,
+ * 以及将 savepoint 的处理委托给底层的 {@link SavepointManager}, 提供事务保留 savepoint 的选项.
+ * 不假设任何特定的内部事务处理, 例如底层事务对象, 并且没有事务同步机制
  *
- * <p>Pre-implements the handling of local rollback-only and completed flags, and
- * delegation to an underlying {@link org.springframework.transaction.SavepointManager}.
- * Also offers the option of a holding a savepoint within the transaction.
- *
- * <p>Does not assume any specific internal transaction handling, such as an
- * underlying transaction object, and no transaction synchronization mechanism.
- *
- * @author Juergen Hoeller
- * @see #setRollbackOnly()
- * @see #isRollbackOnly()
- * @see #setCompleted()
- * @see #isCompleted()
- * @see #getSavepointManager()
  * @see SimpleTransactionStatus
  * @see DefaultTransactionStatus
- * @since 1.2.3
  */
 public abstract class AbstractTransactionStatus implements TransactionStatus {
 

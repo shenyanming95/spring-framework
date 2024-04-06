@@ -17,9 +17,7 @@
 package org.springframework.transaction.support;
 
 /**
- * Generic interface to be implemented by resource holders.
- * Allows Spring's transaction infrastructure to introspect
- * and reset the holder when necessary.
+ * 由资源持有者实现的通用接口, 允许在必要时自省并重置持有者.
  *
  * @author Juergen Hoeller
  * @see ResourceHolderSupport
